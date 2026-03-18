@@ -50,60 +50,51 @@ public class Bug {
     public void setId(Long id) {
         this.id = id;
     }
-
     public String getTitle() {
         return title;
     }
-
     public void setTitle(String title) {
         this.title = title;
     }
-
     public String getText() {
         return text;
     }
-
     public void setText(String text) {
         this.text = text;
     }
-
     public String getImageUrl() {
         return imageUrl;
     }
-
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
-
     public BugStatus getStatus() {
         return status;
     }
-
     public void setStatus(BugStatus status) {
         this.status = status;
     }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
-
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-
     public User getAuthor() {
         return author;
     }
-
     public void setAuthor(User author) {
         this.author = author;
     }
-
     public List<Tag> getTags() {
         return tags;
     }
-
     public void setTags(List<Tag> tags) {
         this.tags = tags;
+    }
+
+    @PrePersist         // fara asta crapa la insert
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
     }
 }

@@ -65,4 +65,10 @@ public class Comment {
     public void setBug(Bug bug) {
         this.bug = bug;
     }
+
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "users")
 public class User {
 
     @Id
@@ -55,5 +56,10 @@ public class User {
     }
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    @PrePersist         // fara asta crapa la insert. Spring seteaza automat valoarea
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
     }
 }

@@ -8,7 +8,6 @@ public class BugReportProjectApplication {
 
     public static void main(String[] args) {
 
-        System.out.println("Heloooooooooooooooo");
         SpringApplication.run(BugReportProjectApplication.class, args);
     }
 
