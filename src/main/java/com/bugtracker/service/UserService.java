@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+// Logica pentru baza de date
+
 @Service
 public class UserService {
 
@@ -15,16 +17,16 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User createUser(User user) {
-        return userRepository.save(user);
-    }
-
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
     public User getUserById(Long id) {
         return userRepository.findById(id).orElseThrow();
+    }
+
+    public User createUser(User user) {
+        return userRepository.save(user);
     }
 
     public User updateUser(Long id, User updatedUser) {

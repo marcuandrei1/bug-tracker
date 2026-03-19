@@ -39,7 +39,6 @@ public class Bug {
     )
     private List<Tag> tags;
 
-
     public Bug() {
     }
 
