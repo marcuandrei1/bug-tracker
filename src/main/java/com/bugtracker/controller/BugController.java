@@ -1,7 +1,9 @@
 package com.bugtracker.controller;
 
 import com.bugtracker.entity.Bug;
+import com.bugtracker.entity.Comment;
 import com.bugtracker.service.BugService;
+import com.bugtracker.service.CommentService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,9 +13,11 @@ import java.util.List;
 public class BugController {
 
     private final BugService bugService;
+    private final CommentService commentService;
 
-    public BugController(BugService bugService) {
+    public BugController(BugService bugService, CommentService commentService) {
         this.bugService = bugService;
+        this.commentService = commentService;
     }
 
     @PostMapping
@@ -39,5 +43,10 @@ public class BugController {
     @DeleteMapping("/{id}")
     public void deleteBug(@PathVariable Long id) {
         bugService.deleteBug(id);
+    }
+
+    @GetMapping("/{bugId}/comments")
+    public List<Comment> getCommentsByBugId(@PathVariable Long bugId) {
+        return commentService.getCommentsByBugId(bugId);
     }
 }
