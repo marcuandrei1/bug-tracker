@@ -4,18 +4,18 @@ import com.bugtracker.entity.Bug;
 import com.bugtracker.entity.BugStatus;
 import com.bugtracker.entity.Tag;
 import com.bugtracker.entity.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
-@Transactional
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
 public class BugRepositoryTest {
     @Autowired
@@ -27,15 +27,20 @@ public class BugRepositoryTest {
     @Autowired
     private TagRepository tagRepository;
 
-    @Test
-    void shouldSaveBugWithAuthor(){
-        // Creeaza un User author
-        User author=new User();
+    private User author;
+
+    // Folosim asta ca sa nu repetam aceeasi bucata de cod de fiecare data, in fiecare test
+    @BeforeEach
+    void setUp() {
+        author = new User();
         author.setUsername("test_author");
         author.setEmail("test_author@test.com");
         author.setPassword("pass");
         userRepository.save(author);
+    }
 
+    @Test
+    void shouldSaveBugWithAuthor(){
         // Creeaza un Bug pentru author
         Bug bug=new Bug();
         bug.setTitle("Test Bug");
@@ -65,12 +70,6 @@ public class BugRepositoryTest {
 
     @Test
     void shouldSaveBugWithTags() {
-        User author = new User();
-        author.setUsername("test_tag");
-        author.setEmail("test_tag@test.com");
-        author.setPassword("pass");
-        userRepository.save(author);
-
         Tag tag1 = new Tag();
         tag1.setName("URGENT");
         tagRepository.save(tag1);
@@ -91,5 +90,47 @@ public class BugRepositoryTest {
         assertNotNull(savedBug.getId());
         assertEquals(2, savedBug.getTags().size());
         assertTrue(savedBug.getTags().stream().anyMatch(t -> t.getName().equals("URGENT")));
+    }
+
+    @Test
+    void shouldFindBugById() {
+        Bug bug = new Bug();
+        bug.setTitle("Test Bug - Find by ID");
+        bug.setText("Bug description...");
+        bug.setStatus(BugStatus.RECEIVED);
+        bug.setAuthor(author);
+        Bug saved = bugRepository.save(bug);
+
+        Bug found = bugRepository.findById(saved.getId()).orElse(null);
+        assertNotNull(found);
+        assertEquals("Test Bug - Find by ID", found.getTitle());
+    }
+
+    @Test
+    void shouldUpdateBugStatus(){
+        Bug bug = new Bug();
+        bug.setTitle("Test Bug - Find by ID");
+        bug.setText("Bug description...");
+        bug.setStatus(BugStatus.RECEIVED);
+        bug.setAuthor(author);
+        bugRepository.save(bug);
+
+        bug.setStatus(BugStatus.IN_PROGRESS);
+        Bug updated = bugRepository.save(bug);
+
+        assertEquals(BugStatus.IN_PROGRESS, updated.getStatus());
+    }
+
+    @Test
+    void shouldDeleteBug(){
+        Bug bug = new Bug();
+        bug.setTitle("Test Bug - Delete bug");
+        bug.setText("Bug description...");
+        bug.setStatus(BugStatus.RECEIVED);
+        bug.setAuthor(author);
+        bugRepository.save(bug);
+
+        bugRepository.delete(bug);
+        assertFalse(bugRepository.findById(bug.getId()).isPresent());
     }
 }

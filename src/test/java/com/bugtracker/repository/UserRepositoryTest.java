@@ -3,17 +3,18 @@ package com.bugtracker.repository;
 import com.bugtracker.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
-@Transactional
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
 public class UserRepositoryTest {
     @Autowired
@@ -77,5 +78,52 @@ public class UserRepositoryTest {
         assertThrows(org.springframework.dao.DataIntegrityViolationException.class, () -> {
             userRepository.saveAndFlush(user2);
         });
+    }
+
+    @Test
+    void shouldNotAllowDuplicateUsername() {
+        User user1 = new User();
+        user1.setUsername("user");
+        user1.setEmail("email1@test.com");
+        user1.setPassword("pass");
+        userRepository.saveAndFlush(user1);
+
+        User user2 = new User();
+        user2.setUsername("user");
+        user2.setEmail("email2@test.com");
+        user2.setPassword("pass");
+
+        assertThrows(org.springframework.dao.DataIntegrityViolationException.class, () -> {
+            userRepository.saveAndFlush(user2);
+        });
+    }
+
+    @Test
+    void shouldFindAllUsers() {
+        User u1 = new User();
+        u1.setUsername("u1");
+        u1.setEmail("u1@test.com");
+        u1.setPassword("pass");
+        User u2 = new User();
+        u2.setUsername("u2");
+        u2.setEmail("u2@test.com");
+        u2.setPassword("pass");
+        userRepository.save(u1);
+        userRepository.save(u2);
+
+        List<User> users = userRepository.findAll();
+        assertEquals(2, users.size());
+    }
+
+    @Test
+    void shouldDeleteUser() {
+        User user = new User();
+        user.setUsername("to_delete");
+        user.setEmail("to_delete@test.com");
+        user.setPassword("pass");
+        userRepository.save(user);
+
+        userRepository.delete(user);
+        assertFalse(userRepository.findById(user.getId()).isPresent());
     }
 }

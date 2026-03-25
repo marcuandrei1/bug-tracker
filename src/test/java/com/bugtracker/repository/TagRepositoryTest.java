@@ -2,16 +2,15 @@ package com.bugtracker.repository;
 
 import com.bugtracker.entity.Tag;
 import org.junit.jupiter.api.Test;
-import org.postgresql.shaded.com.ongres.stringprep.ProfileName;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
-@Transactional
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
 public class TagRepositoryTest {
     @Autowired
@@ -29,5 +28,17 @@ public class TagRepositoryTest {
         assertThrows(org.springframework.dao.DataIntegrityViolationException.class, () -> {
             tagRepository.saveAndFlush(tag2);
         });
+    }
+
+    @Test
+    void shouldFindTagByName() {
+        Tag tag = new Tag();
+        tag.setName("SPRING");
+        tagRepository.save(tag);
+
+        Tag found = tagRepository.findByName("SPRING").orElse(null);
+
+        assertNotNull(found);
+        assertEquals("SPRING", found.getName());
     }
 }
