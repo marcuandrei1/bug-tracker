@@ -5,6 +5,7 @@ import com.bugtracker.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +16,9 @@ import static org.mockito.Mockito.*;
 class UserServiceTest {
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserService userService;
@@ -33,12 +37,14 @@ class UserServiceTest {
 
     @Test
     void shouldCreateUser() {
+        when(passwordEncoder.encode("pass")).thenReturn("encoded_pass");
         when(userRepository.save(user)).thenReturn(user);
 
         User created = userService.createUser(user);
 
         assertNotNull(created);
         assertEquals("test_user", created.getUsername());
+        verify(passwordEncoder).encode("pass");
         verify(userRepository, times(1)).save(user);
     }
 
@@ -77,6 +83,7 @@ class UserServiceTest {
         updated.setEmail("updated@test.com");
         updated.setPassword("newpass");
 
+        when(passwordEncoder.encode("newpass")).thenReturn("encoded_newpass");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenReturn(user);
 
@@ -84,6 +91,7 @@ class UserServiceTest {
 
         assertEquals("updated_user", result.getUsername());
         assertEquals("updated@test.com", result.getEmail());
+        verify(passwordEncoder).encode("newpass");
         verify(userRepository).save(user);
     }
 
