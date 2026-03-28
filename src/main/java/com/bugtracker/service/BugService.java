@@ -5,6 +5,7 @@ import com.bugtracker.entity.BugStatus;
 import com.bugtracker.repository.BugRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -21,8 +22,34 @@ public class BugService {
         return bugRepository.save(bug);
     }
 
+    /**
+     * Metoda getAllBugs returneaza deja in ordine descrescatoare bugg-urile dupa campul createdAt
+     * */
     public List<Bug> getAllBugs() {
-        return bugRepository.findAll();
+        return bugRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    public List<Bug> getBugsByAuthor(Long authorId) {
+        return bugRepository.findByAuthorIdOrderByCreatedAtDesc(authorId);
+    }
+
+    public List<Bug> getBugsByTags(String... tagNames) {
+        if (tagNames == null || tagNames.length == 0) {
+            return bugRepository.findAllByOrderByCreatedAtDesc();
+        }
+
+        return bugRepository.findDistinctByTags_NameInOrderByCreatedAtDesc(Arrays.asList(tagNames));
+    }
+
+    public List<Bug> getBugsByAuthorAndTags(Long authorId, String... tagNames) {
+        if (tagNames == null || tagNames.length == 0) {
+            return bugRepository.findByAuthorIdOrderByCreatedAtDesc(authorId);
+        }
+
+        return bugRepository.findByAuthorIdAndTags_NameInOrderByCreatedAtDesc(
+                authorId,
+                Arrays.asList(tagNames)
+        );
     }
 
     public Bug getBugById(Long id) {
@@ -34,10 +61,21 @@ public class BugService {
         Bug bug = bugRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Bug not found"));
 
-        bug.setTitle(updatedBug.getTitle());
-        bug.setText(updatedBug.getText());
-        bug.setImageUrl(updatedBug.getImageUrl());
-        bug.setStatus(updatedBug.getStatus());
+        if (updatedBug.getTitle() != null) {
+            bug.setTitle(updatedBug.getTitle());
+        }
+        if (updatedBug.getText() != null) {
+            bug.setText(updatedBug.getText());
+        }
+        if (updatedBug.getImageUrl() != null) {
+            bug.setImageUrl(updatedBug.getImageUrl());
+        }
+        if (updatedBug.getStatus() != null) {
+            bug.setStatus(updatedBug.getStatus());
+        }
+        if (updatedBug.getTags() != null) {
+            bug.setTags(updatedBug.getTags());
+        }
 
         return bugRepository.save(bug);
     }

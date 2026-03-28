@@ -25,8 +25,21 @@ public class BugController {
         return bugService.createBug(bug);
     }
 
+    // functia care daca ii dam parametri (authorId, tags) tine cont de ei, daca nu tot se executa
     @GetMapping
-    public List<Bug> getAllBugs() {
+    public List<Bug> getAllBugs(@RequestParam(required = false) Long authorId, @RequestParam(required = false) List<String> tags) {
+        if (authorId != null && tags != null && !tags.isEmpty()) {
+            return bugService.getBugsByAuthorAndTags(authorId, tags.toArray(new String[0]));
+        }
+
+        if (authorId != null) {
+            return bugService.getBugsByAuthor(authorId);
+        }
+
+        if (tags != null && !tags.isEmpty()) {
+            return bugService.getBugsByTags(tags.toArray(new String[0]));
+        }
+
         return bugService.getAllBugs();
     }
 
