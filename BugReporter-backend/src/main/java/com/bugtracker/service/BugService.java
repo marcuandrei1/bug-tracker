@@ -2,7 +2,11 @@ package com.bugtracker.service;
 
 import com.bugtracker.entity.Bug;
 import com.bugtracker.entity.BugStatus;
+import com.bugtracker.entity.Tag;
+import com.bugtracker.entity.User;
 import com.bugtracker.repository.BugRepository;
+import com.bugtracker.repository.TagRepository;
+import com.bugtracker.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -12,13 +16,32 @@ import java.util.List;
 public class BugService {
 
     private final BugRepository bugRepository;
+    private final TagRepository tagRepository;
+    private final UserRepository userRepository;
 
-    public BugService(BugRepository bugRepository) {
+    public BugService(BugRepository bugRepository, TagRepository tagRepository, UserRepository userRepository) {
         this.bugRepository = bugRepository;
+        this.tagRepository = tagRepository;
+        this.userRepository = userRepository;
     }
 
     public Bug createBug(Bug bug) {
-        bug.setStatus(BugStatus.RECEIVED); // setam status implicit
+        User author = userRepository.findById(bug.getAuthor().getId())
+                .orElseThrow(() -> new RuntimeException("Author not found"));
+
+        bug.setAuthor(author);
+        bug.setStatus(BugStatus.RECEIVED);      // statis implicit la bug cand il cream
+
+        // procesez tagurile, daca nu gasesc tag-urile introduse de utilizator atunci le creez in repo pe loc si dupaia le setez la bug
+        if (bug.getTags() != null && !bug.getTags().isEmpty()) {
+            List<Tag> resolvedTags = bug.getTags().stream()
+                    .map(tag -> tagRepository.findByName(tag.getName())
+                            .orElseGet(() -> tagRepository.save(tag)))
+                    .toList();
+
+            bug.setTags(resolvedTags);
+        }
+
         return bugRepository.save(bug);
     }
 
@@ -57,6 +80,8 @@ public class BugService {
                 .orElseThrow(() -> new RuntimeException("Bug not found"));
     }
 
+
+    // la updateBug, pentru lista de Tag-uri se poate modifica doar lista de taguri, nu sa modificam tagurile din interiorul unui bug
     public Bug updateBug(Long id, Bug updatedBug) {
         Bug bug = bugRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Bug not found"));
