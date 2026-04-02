@@ -53,13 +53,13 @@ class BugServiceTest {
 
     @Test
     void shouldGetAllBugs() {
-        when(bugRepository.findAll()).thenReturn(List.of(bug));
+        when(bugRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(bug));
 
         List<Bug> bugs = bugService.getAllBugs();
 
         assertEquals(1, bugs.size());
         assertEquals("Sample Bug", bugs.get(0).getTitle());
-        verify(bugRepository, times(1)).findAll();
+        verify(bugRepository, times(1)).findAllByOrderByCreatedAtDesc();
     }
 
     @Test
