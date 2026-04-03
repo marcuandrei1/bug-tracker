@@ -4,6 +4,8 @@ import com.bugtracker.entity.Bug;
 import com.bugtracker.entity.BugStatus;
 import com.bugtracker.entity.User;
 import com.bugtracker.repository.BugRepository;
+import com.bugtracker.repository.TagRepository;
+import com.bugtracker.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -20,6 +22,12 @@ class BugServiceTest {
     @Mock
     private BugRepository bugRepository;
 
+    @Mock
+    private TagRepository tagRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private BugService bugService;
     private Bug bug;
@@ -30,6 +38,7 @@ class BugServiceTest {
         MockitoAnnotations.openMocks(this);
 
         author = new User();
+        author.setId(1L);
         author.setUsername("author");
         author.setEmail("author@test.com");
 
@@ -42,6 +51,7 @@ class BugServiceTest {
 
     @Test
     void shouldCreateBug() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(author));
         when(bugRepository.save(bug)).thenReturn(bug);
 
         Bug created = bugService.createBug(bug);
