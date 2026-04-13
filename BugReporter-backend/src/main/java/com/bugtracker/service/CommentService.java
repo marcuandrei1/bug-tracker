@@ -1,6 +1,9 @@
 package com.bugtracker.service;
 
+import com.bugtracker.entity.Bug;
+import com.bugtracker.entity.BugStatus;
 import com.bugtracker.entity.Comment;
+import com.bugtracker.repository.BugRepository;
 import com.bugtracker.repository.CommentRepository;
 import org.springframework.stereotype.Service;
 
@@ -10,13 +13,25 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
+    private final BugRepository bugRepository;
 
-    public CommentService(CommentRepository commentRepository) {
+    public CommentService(CommentRepository commentRepository, BugRepository bugRepository) {
         this.commentRepository = commentRepository;
+        this.bugRepository = bugRepository;
     }
 
     public Comment createComment(Comment comment) {
-        return commentRepository.save(comment);
+        Comment saved = commentRepository.save(comment);
+
+        // Daca e primul comentariu pe bug, schimbam statusul in IN_PROGRESS
+        Bug bug = bugRepository.findById(comment.getBug().getId())
+                .orElseThrow(() -> new RuntimeException("Bug not found"));
+        if (bug.getStatus() == BugStatus.RECEIVED) {
+            bug.setStatus(BugStatus.IN_PROGRESS);
+            bugRepository.save(bug);
+        }
+
+        return saved;
     }
 
     public List<Comment> getAllComments() {     // nu stiu daca vom avea nevoie neaparat de getAllComments si getCommentsById pentru ca merg impreuna cu buggurile
