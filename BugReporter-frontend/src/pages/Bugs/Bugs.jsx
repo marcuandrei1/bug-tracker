@@ -1,66 +1,61 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getBugs } from '../../api';
 import './Bugs.css';
 
-const mockBugs = [
-  {
-    id: 1,
-    title: 'Butonul de login nu functioneaza',
-    text: 'Cand apas pe butonul de login, nu se intampla nimic. Pagina ramane blocata.',
-    status: 'RECEIVED',
-    createdAt: '2026-03-29T10:00:00',
-    author: { id: 1, username: 'ion' },
-    tags: [{ name: 'ui' }, { name: 'login' }]
-  },
-  {
-    id: 2,
-    title: 'Crash la upload imagine',
-    text: 'Aplicatia se blocheaza cand incarci o imagine mai mare de 5MB.',
-    status: 'IN_PROGRESS',
-    createdAt: '2026-03-28T14:30:00',
-    author: { id: 2, username: 'maria' },
-    tags: [{ name: 'crash' }, { name: 'upload' }]
-  },
-  {
-    id: 3,
-    title: 'Textul dispare la resize',
-    text: 'Pe mobile, textul din sidebar dispare complet.',
-    status: 'SOLVED',
-    createdAt: '2026-03-27T09:15:00',
-    author: { id: 1, username: 'ion' },
-    tags: [{ name: 'ui' }, { name: 'responsive' }]
-  }
-];
-
-function Bugs() {
+function Bugs({ user }) {
   const navigate = useNavigate();
+  const [bugs, setBugs] = useState([]);
   const [titleFilter, setTitleFilter] = useState('');
   const [tagFilter, setTagFilter] = useState('');
-  const [filtered, setFiltered] = useState(mockBugs);
+  const [userFilter, setUserFilter] = useState('');
+  const [myBugs, setMyBugs] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const loadBugs = async (params = {}) => {
+    setLoading(true);
+    try {
+      const data = await getBugs(params);
+      setBugs(data);
+    } catch (e) {
+      console.error(e);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadBugs();
+  }, []);
 
   const handleFilter = () => {
-    let result = mockBugs;
-    if (titleFilter) {
-      result = result.filter(b => b.title.toLowerCase().includes(titleFilter.toLowerCase()));
+    const params = {};
+    if (titleFilter.trim()) {
+      params.title = titleFilter.trim();
     }
-    if (tagFilter) {
-      result = result.filter(b =>
-        (b.tags || []).some(t => t.name.toLowerCase().includes(tagFilter.toLowerCase()))
-      );
+    if (tagFilter.trim()) {
+      params.tags = tagFilter.trim();
     }
-    setFiltered(result);
+    if (myBugs && user && !params.title) {
+      params.authorId = user.id;
+    }
+    loadBugs(params);
   };
+
+  const handleReset = () => {
+    setTitleFilter('');
+    setTagFilter('');
+    setUserFilter('');
+    setMyBugs(false);
+    loadBugs();
+  };
+
+  const filteredBugs = myBugs && user
+    ? bugs.filter(b => b.author?.id === user.id)
+    : bugs;
 
   return (
     <div className="container">
-      <div className="flex-between mb-1">
-        <h2>Bugs</h2>
-        <button className="btn btn-primary" onClick={() => navigate('/create-bug')}>
-          + Raporteaza Bug
-        </button>
-      </div>
-
       <div className="filters">
         <input
           type="text"
@@ -74,16 +69,32 @@ function Bugs() {
           value={tagFilter}
           onChange={e => setTagFilter(e.target.value)}
         />
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.9rem' }}>
+          <input
+            type="checkbox"
+            checked={myBugs}
+            onChange={e => setMyBugs(e.target.checked)}
+          />
+          Bugurile mele
+        </label>
         <button className="btn btn-secondary btn-sm" onClick={handleFilter}>
           Filtreaza
+        </button>
+        <button className="btn btn-sm" onClick={handleReset} style={{ background: '#ccc' }}>
+          Reset
+        </button>
+        <button className="btn btn-danger btn-sm" onClick={() => navigate('/create-bug')}>
+          + Raporteaza Bug
         </button>
       </div>
 
       <div>
-        {filtered.length === 0 ? (
+        {loading ? (
+          <p>Se incarca...</p>
+        ) : filteredBugs.length === 0 ? (
           <p>Niciun bug gasit.</p>
         ) : (
-          filtered.map(bug => (
+          filteredBugs.map(bug => (
             <div
               key={bug.id}
               className="card"

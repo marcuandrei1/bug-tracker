@@ -2,6 +2,7 @@ package com.bugtracker.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = {"author", "tags"})
+@ToString(exclude = {"author", "tags", "comments"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Bug {
 
@@ -45,6 +46,10 @@ public class Bug {
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private List<Tag> tags;
+
+    @OneToMany(mappedBy = "bug", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @JsonIgnore
+    private List<Comment> comments;
 
     @PrePersist
     public void prePersist() {

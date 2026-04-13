@@ -56,6 +56,10 @@ public class BugService {
         return bugRepository.findByAuthorIdOrderByCreatedAtDesc(authorId);
     }
 
+    public List<Bug> searchByTitle(String title) {
+        return bugRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(title);
+    }
+
     public List<Bug> getBugsByTags(String... tagNames) {
         if (tagNames == null || tagNames.length == 0) {
             return bugRepository.findAllByOrderByCreatedAtDesc();
@@ -107,5 +111,12 @@ public class BugService {
 
     public void deleteBug(Long id) {
         bugRepository.deleteById(id);
+    }
+
+    public Bug markAsSolved(Long id) {
+        Bug bug = bugRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Bug not found"));
+        bug.setStatus(BugStatus.SOLVED);
+        return bugRepository.save(bug);
     }
 }

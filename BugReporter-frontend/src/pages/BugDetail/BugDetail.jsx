@@ -1,58 +1,113 @@
-import { useParams, Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { getBugById, getCommentsByBugId, createComment, deleteBug, deleteComment, updateComment, uploadFile, markBugAsSolved } from '../../api';
 import './BugDetail.css';
 
-const mockBugs = {
-  1: {
-    id: 1, title: 'Butonul de login nu functioneaza',
-    text: 'Cand apas pe butonul de login, nu se intampla nimic. Pagina ramane blocata.',
-    status: 'RECEIVED', createdAt: '2026-03-29T10:00:00',
-    author: { id: 1, username: 'ion' },
-    tags: [{ name: 'ui' }, { name: 'login' }],
-    imageUrl: null
-  },
-  2: {
-    id: 2, title: 'Crash la upload imagine',
-    text: 'Aplicatia se blocheaza cand incarci o imagine mai mare de 5MB.',
-    status: 'IN_PROGRESS', createdAt: '2026-03-28T14:30:00',
-    author: { id: 2, username: 'maria' },
-    tags: [{ name: 'crash' }, { name: 'upload' }],
-    imageUrl: null
-  },
-  3: {
-    id: 3, title: 'Textul dispare la resize',
-    text: 'Pe mobile, textul din sidebar dispare complet.',
-    status: 'SOLVED', createdAt: '2026-03-27T09:15:00',
-    author: { id: 1, username: 'ion' },
-    tags: [{ name: 'ui' }, { name: 'responsive' }],
-    imageUrl: null
-  }
-};
-
-const mockComments = {
-  1: [
-    { id: 1, text: 'Am si eu aceeasi problema pe Chrome.', createdAt: '2026-03-29T11:00:00', author: { id: 2, username: 'maria' }, imageUrl: null }
-  ],
-  2: [
-    { id: 2, text: 'Incerc sa reproduc bugul, revin.', createdAt: '2026-03-28T15:00:00', author: { id: 1, username: 'ion' }, imageUrl: null },
-    { id: 3, text: 'Am gasit cauza — limita de memorie.', createdAt: '2026-03-28T16:30:00', author: { id: 2, username: 'maria' }, imageUrl: null }
-  ],
-  3: []
-};
-
-function BugDetail() {
+function BugDetail({ user }) {
   const { id } = useParams();
-  const bug = mockBugs[id];
+  const navigate = useNavigate();
+  const [bug, setBug] = useState(null);
+  const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
-  const comments = mockComments[id] || [];
+  const [commentImageFile, setCommentImageFile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editCommentText, setEditCommentText] = useState('');
 
-  if (!bug) {
-    return (
-      <div className="container">
-        <p style={{ color: 'red' }}>Bug negasit.</p>
-      </div>
-    );
-  }
+  const loadData = async () => {
+    try {
+      const bugData = await getBugById(id);
+      setBug(bugData);
+      const commentsData = await getCommentsByBugId(id);
+      setComments(commentsData);
+    } catch (e) {
+      setError(e.message);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [id]);
+
+  const handleAddComment = async () => {
+    if (!commentText.trim()) return;
+    try {
+      let imageUrl = null;
+      if (commentImageFile) {
+        imageUrl = await uploadFile(commentImageFile);
+      }
+      await createComment({
+        text: commentText,
+        imageUrl,
+        author: { id: user.id },
+        bug: { id: Number(id) }
+      });
+      setCommentText('');
+      setCommentImageFile(null);
+      loadData();
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  const handleDeleteBug = async () => {
+    if (!window.confirm('Esti sigur ca vrei sa stergi acest bug?')) return;
+    try {
+      await deleteBug(id);
+      navigate('/bugs');
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm('Stergi comentariul?')) return;
+    try {
+      await deleteComment(commentId);
+      loadData();
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  const handleEditComment = (comment) => {
+    setEditingCommentId(comment.id);
+    setEditCommentText(comment.text);
+  };
+
+  const handleSaveComment = async (commentId) => {
+    if (!editCommentText.trim()) return;
+    try {
+      await updateComment(commentId, { text: editCommentText });
+      setEditingCommentId(null);
+      setEditCommentText('');
+      loadData();
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCommentId(null);
+    setEditCommentText('');
+  };
+
+  const handleMarkSolved = async () => {
+    try {
+      await markBugAsSolved(id);
+      loadData();
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  if (loading) return <div className="container"><p>Se incarca...</p></div>;
+  if (error && !bug) return <div className="container"><p style={{ color: 'red' }}>{error}</p></div>;
+  if (!bug) return <div className="container"><p style={{ color: 'red' }}>Bug negasit.</p></div>;
+
+  const isAuthor = user && bug.author && user.id === bug.author.id;
 
   return (
     <div className="container">
@@ -69,7 +124,7 @@ function BugDetail() {
           De {bug.author?.username || 'Anonim'} &middot; {new Date(bug.createdAt).toLocaleString()}
         </div>
         {bug.imageUrl && (
-          <img src={bug.imageUrl} alt="bug image" style={{ maxWidth: '100%', margin: '0.5rem 0', borderRadius: '6px' }} />
+          <img src={`http://localhost:8080${bug.imageUrl}`} alt="bug image" style={{ maxWidth: '100%', margin: '0.5rem 0', borderRadius: '6px' }} />
         )}
         <p className="mt-1">{bug.text}</p>
         <div className="tags mt-1">
@@ -77,6 +132,15 @@ function BugDetail() {
             <span key={t.name} className="tag">{t.name}</span>
           ))}
         </div>
+        {isAuthor && (
+          <div className="mt-1" style={{ display: 'flex', gap: '0.5rem' }}>
+            <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/bugs/${bug.id}/edit`)}>Editeaza</button>
+            <button className="btn btn-danger btn-sm" onClick={handleDeleteBug}>Sterge</button>
+            {bug.status !== 'SOLVED' && (
+              <button className="btn btn-primary btn-sm" onClick={handleMarkSolved}>Marcheaza ca rezolvat</button>
+            )}
+          </div>
+        )}
       </div>
 
       <h3 className="mt-2">Comentarii ({comments.length})</h3>
@@ -87,13 +151,37 @@ function BugDetail() {
         ) : (
           comments.map(c => (
             <div key={c.id} className="comment">
-              <div className="meta">
-                {c.author?.username || 'Anonim'} &middot; {new Date(c.createdAt).toLocaleString()}
+              <div className="flex-between">
+                <div className="meta">
+                  {c.author?.username || 'Anonim'} &middot; {new Date(c.createdAt).toLocaleString()}
+                </div>
+                {user && c.author && user.id === c.author.id && (
+                  <div style={{ display: 'flex', gap: '0.3rem' }}>
+                    {editingCommentId !== c.id && (
+                      <button className="btn btn-secondary btn-sm" onClick={() => handleEditComment(c)}>Editeaza</button>
+                    )}
+                    <button className="btn btn-danger btn-sm" onClick={() => handleDeleteComment(c.id)}>Sterge</button>
+                  </div>
+                )}
               </div>
               {c.imageUrl && (
-                <img src={c.imageUrl} alt="comment image" style={{ maxWidth: '100%', margin: '0.3rem 0', borderRadius: '4px' }} />
+                <img src={`http://localhost:8080${c.imageUrl}`} alt="comment image" style={{ maxWidth: '100%', margin: '0.3rem 0', borderRadius: '4px' }} />
               )}
-              <p className="mt-1">{c.text}</p>
+              {editingCommentId === c.id ? (
+                <div className="mt-1">
+                  <textarea
+                    value={editCommentText}
+                    onChange={e => setEditCommentText(e.target.value)}
+                    style={{ width: '100%', minHeight: '60px' }}
+                  />
+                  <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.3rem' }}>
+                    <button className="btn btn-primary btn-sm" onClick={() => handleSaveComment(c.id)}>Salveaza</button>
+                    <button className="btn btn-sm" onClick={handleCancelEdit} style={{ background: '#ccc' }}>Anuleaza</button>
+                  </div>
+                </div>
+              ) : (
+                <p className="mt-1">{c.text}</p>
+              )}
             </div>
           ))
         )}
@@ -108,7 +196,16 @@ function BugDetail() {
             onChange={e => setCommentText(e.target.value)}
           />
         </div>
-        <button className="btn btn-primary">Trimite</button>
+        <div className="form-group">
+          <label>Imagine (optional)</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={e => setCommentImageFile(e.target.files[0] || null)}
+          />
+        </div>
+        <button className="btn btn-primary" onClick={handleAddComment}>Trimite</button>
+        {error && <p style={{ color: 'red', marginTop: '0.5rem' }}>{error}</p>}
       </div>
     </div>
   );

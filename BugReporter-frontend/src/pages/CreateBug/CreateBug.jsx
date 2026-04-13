@@ -1,22 +1,45 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { createBug, uploadFile } from '../../api';
 import './CreateBug.css';
 
-function CreateBug() {
+function CreateBug({ user }) {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState(null);
   const [tags, setTags] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title || !text) {
       setError('Titlul si descrierea sunt obligatorii.');
       return;
     }
-    alert('Bug creat (doar UI, fara backend)');
-    navigate('/bugs');
+
+    const tagList = tags
+      .split(',')
+      .map(t => t.trim())
+      .filter(t => t.length > 0)
+      .map(t => ({ name: t }));
+
+    try {
+      let imageUrl = null;
+      if (imageFile) {
+        imageUrl = await uploadFile(imageFile);
+      }
+
+      await createBug({
+        title,
+        text,
+        imageUrl,
+        author: { id: user.id },
+        tags: tagList
+      });
+      navigate('/bugs');
+    } catch (e) {
+      setError(e.message);
+    }
   };
 
   return (
@@ -46,12 +69,11 @@ function CreateBug() {
         </div>
 
         <div className="form-group">
-          <label>URL Imagine (optional)</label>
+          <label>Imagine (optional)</label>
           <input
-            type="text"
-            placeholder="https://..."
-            value={imageUrl}
-            onChange={e => setImageUrl(e.target.value)}
+            type="file"
+            accept="image/*"
+            onChange={e => setImageFile(e.target.files[0] || null)}
           />
         </div>
 

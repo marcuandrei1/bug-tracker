@@ -27,7 +27,15 @@ public class BugController {
 
     // functia care daca ii dam parametri (authorId, tags) tine cont de ei, daca nu tot se executa
     @GetMapping
-    public List<Bug> getAllBugs(@RequestParam(required = false) Long authorId, @RequestParam(required = false) List<String> tags) {
+    public List<Bug> getAllBugs(
+            @RequestParam(required = false) Long authorId,
+            @RequestParam(required = false) List<String> tags,
+            @RequestParam(required = false) String title) {
+
+        if (title != null && !title.isEmpty()) {
+            return bugService.searchByTitle(title);
+        }
+
         if (authorId != null && tags != null && !tags.isEmpty()) {
             return bugService.getBugsByAuthorAndTags(authorId, tags.toArray(new String[0]));
         }
@@ -61,5 +69,10 @@ public class BugController {
     @GetMapping("/{bugId}/comments")
     public List<Comment> getCommentsByBugId(@PathVariable Long bugId) {
         return commentService.getCommentsByBugId(bugId);
+    }
+
+    @PutMapping("/{id}/solve")
+    public Bug markAsSolved(@PathVariable Long id) {
+        return bugService.markAsSolved(id);
     }
 }

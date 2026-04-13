@@ -15,4 +15,6 @@ public interface BugRepository extends JpaRepository<Bug, Long> {
     List<Bug> findDistinctByTags_NameInOrderByCreatedAtDesc(Collection<String> tagNames);
 
     List<Bug> findByAuthorIdAndTags_NameInOrderByCreatedAtDesc(Long authorId, Collection<String> tagNames);
+
+    List<Bug> findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(String title);
 }
