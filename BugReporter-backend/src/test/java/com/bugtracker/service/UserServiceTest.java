@@ -5,6 +5,7 @@ import com.bugtracker.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +16,9 @@ import static org.mockito.Mockito.*;
 class UserServiceTest {
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserService userService;
@@ -32,14 +36,51 @@ class UserServiceTest {
     }
 
     @Test
-    void shouldCreateUser() {
+    void shouldRegisterUser() {
+        when(userRepository.findByUsername("test_user")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("test@test.com")).thenReturn(Optional.empty());
+        when(passwordEncoder.encode("pass")).thenReturn("encoded_pass");
         when(userRepository.save(user)).thenReturn(user);
 
-        User created = userService.createUser(user);
+        User created = userService.register(user);
 
         assertNotNull(created);
         assertEquals("test_user", created.getUsername());
+        verify(passwordEncoder).encode("pass");
         verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    void shouldThrowWhenUsernameExists() {
+        when(userRepository.findByUsername("test_user")).thenReturn(Optional.of(user));
+
+        assertThrows(RuntimeException.class, () -> userService.register(user));
+    }
+
+    @Test
+    void shouldThrowWhenEmailExists() {
+        when(userRepository.findByUsername("test_user")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("test@test.com")).thenReturn(Optional.of(user));
+
+        assertThrows(RuntimeException.class, () -> userService.register(user));
+    }
+
+    @Test
+    void shouldLoginUser() {
+        when(userRepository.findByUsername("test_user")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("pass", "pass")).thenReturn(true);
+
+        User loggedIn = userService.login("test_user", "pass");
+
+        assertEquals("test_user", loggedIn.getUsername());
+    }
+
+    @Test
+    void shouldThrowWhenLoginWrongPassword() {
+        when(userRepository.findByUsername("test_user")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("wrong", "pass")).thenReturn(false);
+
+        assertThrows(RuntimeException.class, () -> userService.login("test_user", "wrong"));
     }
 
     @Test
@@ -78,12 +119,14 @@ class UserServiceTest {
         updated.setPassword("newpass");
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode("newpass")).thenReturn("encoded_newpass");
         when(userRepository.save(any(User.class))).thenReturn(user);
 
         User result = userService.updateUser(1L, updated);
 
         assertEquals("updated_user", result.getUsername());
         assertEquals("updated@test.com", result.getEmail());
+        verify(passwordEncoder).encode("newpass");
         verify(userRepository).save(user);
     }
 
