@@ -1,0 +1,36 @@
+.navbar-logo {
+  height: 36px;
+  object-fit: contain;
+}
+
+.write-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #e63946;
+  color: #fff !important;
+  padding: 0.35rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.write-btn:hover {
+  background: #c5303c;
+  text-decoration: none;
+}
+
+.write-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.username-link {
+  color: #1a1a2e !important;
+  font-weight: 600;
+}
+
+.username-link:hover {
+  text-decoration: underline;
+}
