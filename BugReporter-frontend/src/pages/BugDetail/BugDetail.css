@@ -1,0 +1,18 @@
+.vote-controls, .comment-vote-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.vote-controls button, .comment-vote-controls button {
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 2px 8px;
+}
+
+.vote-controls button:hover {
+    background: #e0e0e0;
+}

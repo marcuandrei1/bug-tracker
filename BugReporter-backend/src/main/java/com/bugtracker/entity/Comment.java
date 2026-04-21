@@ -31,6 +31,9 @@ public class Comment {
     @JoinColumn(name = "bug_id", nullable = false)
     private Bug bug;
 
+    @Transient
+    private int score;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

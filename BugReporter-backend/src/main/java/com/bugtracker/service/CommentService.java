@@ -3,8 +3,10 @@ package com.bugtracker.service;
 import com.bugtracker.entity.Bug;
 import com.bugtracker.entity.BugStatus;
 import com.bugtracker.entity.Comment;
+import com.bugtracker.entity.VoteType;
 import com.bugtracker.repository.BugRepository;
 import com.bugtracker.repository.CommentRepository;
+import com.bugtracker.repository.CommentVoteRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,10 +16,12 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final BugRepository bugRepository;
+    private final CommentVoteRepository commentVoteRepository;
 
-    public CommentService(CommentRepository commentRepository, BugRepository bugRepository) {
+    public CommentService(CommentRepository commentRepository, BugRepository bugRepository, CommentVoteRepository commentVoteRepository) {
         this.commentRepository = commentRepository;
         this.bugRepository = bugRepository;
+        this.commentVoteRepository = commentVoteRepository;
     }
 
     public Comment createComment(Comment comment) {
@@ -43,7 +47,16 @@ public class CommentService {
     }
 
     public List<Comment> getCommentsByBugId(Long bugId) {
-        return commentRepository.findByBugId(bugId);
+        List<Comment> comments = commentRepository.findByBugId(bugId);
+
+        for(Comment c : comments){
+            long likes=commentVoteRepository.countByCommentIdAndVoteType(c.getId(), VoteType.LIKE);
+            long dislikes=commentVoteRepository.countByCommentIdAndVoteType(c.getId(),VoteType.DISLIKE);
+
+            c.setScore((int)(likes-dislikes));
+        }
+
+        return comments;
     }
 
     public Comment updateComment(Long id, Comment updatedComment) {

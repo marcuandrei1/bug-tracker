@@ -1,10 +1,8 @@
 package com.bugtracker.service;
 
-import com.bugtracker.entity.Bug;
-import com.bugtracker.entity.BugStatus;
-import com.bugtracker.entity.Tag;
-import com.bugtracker.entity.User;
+import com.bugtracker.entity.*;
 import com.bugtracker.repository.BugRepository;
+import com.bugtracker.repository.BugVoteRepository;
 import com.bugtracker.repository.TagRepository;
 import com.bugtracker.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -18,11 +16,13 @@ public class BugService {
     private final BugRepository bugRepository;
     private final TagRepository tagRepository;
     private final UserRepository userRepository;
+    private final BugVoteRepository bugVoteRepository;
 
-    public BugService(BugRepository bugRepository, TagRepository tagRepository, UserRepository userRepository) {
+    public BugService(BugRepository bugRepository, TagRepository tagRepository, UserRepository userRepository, BugVoteRepository bugVoteRepository) {
         this.bugRepository = bugRepository;
         this.tagRepository = tagRepository;
         this.userRepository = userRepository;
+        this.bugVoteRepository = bugVoteRepository;
     }
 
     public Bug createBug(Bug bug) {
@@ -80,8 +80,13 @@ public class BugService {
     }
 
     public Bug getBugById(Long id) {
-        return bugRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Bug not found"));
+        Bug bug = bugRepository.findById(id).orElseThrow();
+
+        long likes = bugVoteRepository.countByBugIdAndVoteType(id, VoteType.LIKE);
+        long dislikes = bugVoteRepository.countByBugIdAndVoteType(id, VoteType.DISLIKE);
+
+        bug.setScore((int) (likes - dislikes));
+        return bug;
     }
 
 

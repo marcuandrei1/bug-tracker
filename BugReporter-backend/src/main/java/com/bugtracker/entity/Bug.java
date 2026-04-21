@@ -51,6 +51,9 @@ public class Bug {
     @JsonIgnore
     private List<Comment> comments;
 
+    @Transient
+    private int score;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

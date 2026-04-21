@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { getBugById, getCommentsByBugId, createComment, deleteBug, deleteComment, updateComment, uploadFile, markBugAsSolved } from '../../api';
+import { getBugById, getCommentsByBugId, createComment, deleteBug, voteBug, deleteComment, updateComment, voteComment,uploadFile, markBugAsSolved } from '../../api';
 import './BugDetail.css';
 
 function BugDetail({ user }) {
@@ -103,6 +103,25 @@ function BugDetail({ user }) {
     }
   };
 
+  const handleVoteBug=async(type)=>{
+    try {
+      const response = await voteBug(id, user.id, type);
+      setBug({...bug, score: response.score})
+    } catch(e){
+      alert(e.message);
+    }
+  }
+
+  const handleVoteComment=async(commentId,type)=>{
+    try {
+      const response = await voteComment(commentId, user.id, type);
+      setComments(comments.map(c=>
+      c.id===commentId?{...c, score:response.score}:c));
+    } catch(e){
+      setError(e.message)
+    }
+  }
+
   if (loading) return <div className="container"><p>Se incarca...</p></div>;
   if (error && !bug) return <div className="container"><p style={{ color: 'red' }}>{error}</p></div>;
   if (!bug) return <div className="container"><p style={{ color: 'red' }}>Bug negasit.</p></div>;
@@ -120,6 +139,7 @@ function BugDetail({ user }) {
             {bug.status.replace('_', ' ')}
           </span>
         </div>
+
         <div className="meta">
           De {bug.author?.username || 'Anonim'} &middot; {new Date(bug.createdAt).toLocaleString()}
         </div>
@@ -131,6 +151,12 @@ function BugDetail({ user }) {
           {(bug.tags || []).map(t => (
             <span key={t.name} className="tag">{t.name}</span>
           ))}
+        </div>
+        <div className="vote-controls">
+          <button onClick={() => handleVoteBug('LIKE')}>👍🏼</button>
+          <button onClick={() => handleVoteBug('DISLIKE')}>👎🏼</button>
+          <span>{bug.score || 0}</span>
+
         </div>
         {isAuthor && (
           <div className="mt-1" style={{ display: 'flex', gap: '0.5rem' }}>
@@ -150,6 +176,7 @@ function BugDetail({ user }) {
           <p>Niciun comentariu inca.</p>
         ) : (
           comments.map(c => (
+
             <div key={c.id} className="comment">
               <div className="flex-between">
                 <div className="meta">
@@ -182,7 +209,13 @@ function BugDetail({ user }) {
               ) : (
                 <p className="mt-1">{c.text}</p>
               )}
+              <div className="comment-vote-controls">
+                <button onClick={() => handleVoteComment(c.id, 'LIKE')}>👍🏼</button>
+                <button onClick={() => handleVoteComment(c.id, 'DISLIKE')}>👎🏼</button>
+                <span>{c.score || 0}</span>
+              </div>
             </div>
+
           ))
         )}
       </div>

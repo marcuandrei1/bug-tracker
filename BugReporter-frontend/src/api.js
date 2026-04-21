@@ -78,6 +78,19 @@ export async function markBugAsSolved(id) {
   return res.json();
 }
 
+export async function voteBug(bugId, userId, voteType){
+  const res=await fetch(`${API}/bugs/${bugId}/vote`,{
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({userId, voteType})
+  })
+  if(!res.ok){
+    const err=await res.text()
+    throw new Error(err|| 'Eroare la votarea bugului');
+  }
+  return res.json();
+}
+
 // ---- COMMENTS ----
 
 export async function getCommentsByBugId(bugId) {
@@ -109,6 +122,19 @@ export async function updateComment(id, commentData) {
 export async function deleteComment(id) {
   const res = await fetch(`${API}/comments/${id}`, { method: 'DELETE' });
   if (!res.ok) throw new Error('Eroare la stergerea comentariului');
+}
+
+export async function voteComment(commentId, userId, voteType) {
+  const res = await fetch(`${API}/comments/${commentId}/vote`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({userId, voteType})
+  })
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(err || 'Eroare la votarea comentariului');
+  }
+  return res.json();
 }
 
 // ---- USERS ----
