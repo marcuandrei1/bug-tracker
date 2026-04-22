@@ -106,8 +106,11 @@ function BugDetail({ user }) {
   const handleVoteBug=async(type)=>{
     try {
       const response = await voteBug(id, user.id, type);
-      setBug({...bug, score: response.score})
-    } catch(e){
+
+      const userVote = bug.userVote === type ? null : type;
+
+      setBug({...bug, score: response.score, userVote});
+    } catch (e) {
       alert(e.message);
     }
   }
@@ -115,8 +118,22 @@ function BugDetail({ user }) {
   const handleVoteComment=async(commentId,type)=>{
     try {
       const response = await voteComment(commentId, user.id, type);
-      setComments(comments.map(c=>
-      c.id===commentId?{...c, score:response.score}:c));
+
+      setComments(prevComments =>
+          prevComments.map(c => {
+            if (c.id !== commentId) {
+              return c;
+            }
+
+            const userVote = c.userVote === type ? null : type;
+
+            return {
+              ...c,
+              score: response.score,
+              userVote
+            };
+          })
+      );
     } catch(e){
       setError(e.message)
     }
@@ -153,8 +170,15 @@ function BugDetail({ user }) {
           ))}
         </div>
         <div className="vote-controls">
-          <button onClick={() => handleVoteBug('LIKE')}>👍🏼</button>
-          <button onClick={() => handleVoteBug('DISLIKE')}>👎🏼</button>
+          <button
+              className={bug.userVote === 'LIKE' ? 'vote-like-active' : ''}
+              onClick={() => handleVoteBug('LIKE')}
+          >👍🏼</button>
+
+          <button
+              className={bug.userVote === 'DISLIKE' ? 'vote-dislike-active' : ''}
+              onClick={() => handleVoteBug('DISLIKE')}
+          >👎🏼</button>
           <span>{bug.score || 0}</span>
 
         </div>
@@ -210,8 +234,15 @@ function BugDetail({ user }) {
                 <p className="mt-1">{c.text}</p>
               )}
               <div className="comment-vote-controls">
-                <button onClick={() => handleVoteComment(c.id, 'LIKE')}>👍🏼</button>
-                <button onClick={() => handleVoteComment(c.id, 'DISLIKE')}>👎🏼</button>
+                <button
+                    className={c.userVote === 'LIKE' ? 'vote-like-active' : ''}
+                    onClick={() => handleVoteComment(c.id, 'LIKE')}
+                >👍🏼</button>
+
+                <button
+                    className={c.userVote === 'DISLIKE' ? 'vote-dislike-active' : ''}
+                    onClick={() => handleVoteComment(c.id, 'DISLIKE')}
+                >👎🏼</button>
                 <span>{c.score || 0}</span>
               </div>
             </div>

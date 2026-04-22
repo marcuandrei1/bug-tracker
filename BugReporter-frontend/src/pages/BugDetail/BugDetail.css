@@ -16,3 +16,17 @@
 .vote-controls button:hover {
     background: #e0e0e0;
 }
+
+.vote-controls button.vote-like-active,
+.comment-vote-controls button.vote-like-active {
+    background: #22c55e;
+    color: white;
+    border-color: #16a34a;
+}
+
+.vote-controls button.vote-dislike-active,
+.comment-vote-controls button.vote-dislike-active {
+    background: #ef4444;
+    color: white;
+    border-color: #dc2626;
+}
