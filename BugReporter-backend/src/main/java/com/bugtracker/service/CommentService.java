@@ -56,6 +56,9 @@ public class CommentService {
             c.setScore((int)(likes-dislikes));
         }
 
+        // afisez lista descrescator dupa numarul de voturi
+        comments.sort((c1, c2) -> Integer.compare(c2.getScore(), c1.getScore()));
+
         return comments;
     }
 

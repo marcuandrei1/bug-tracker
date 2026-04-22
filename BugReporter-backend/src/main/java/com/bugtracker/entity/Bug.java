@@ -51,7 +51,7 @@ public class Bug {
     @JsonIgnore
     private List<Comment> comments;
 
-    @Transient
+    @Transient  // face ca "score" sa nu fie bagat in baza de date
     private int score;
 
     @PrePersist
