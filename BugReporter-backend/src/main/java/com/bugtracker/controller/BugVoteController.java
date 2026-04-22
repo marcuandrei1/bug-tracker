@@ -21,7 +21,6 @@ public class BugVoteController {
 
     @PostMapping("/{bugId}/vote")
     public VoteResponse voteBug(@PathVariable Long bugId, @RequestBody VoteRequest request) {
-        int score = bugVoteService.vote(bugId, request.getUserId(), request.getVoteType());
-        return new VoteResponse(score);
+        return bugVoteService.vote(bugId, request.getUserId(), request.getVoteType());
     }
 }

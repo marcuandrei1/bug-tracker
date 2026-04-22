@@ -7,4 +7,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class VoteResponse {
     private int score;
+    private String userVoteType;
 }

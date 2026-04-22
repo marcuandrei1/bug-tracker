@@ -34,6 +34,9 @@ public class Comment {
     @Transient
     private int score;
 
+    @Transient
+    private String userVoteType;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

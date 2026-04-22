@@ -1,5 +1,7 @@
 package com.bugtracker.service;
 
+import com.bugtracker.dto.VoteRequest;
+import com.bugtracker.dto.VoteResponse;
 import com.bugtracker.entity.Comment;
 import com.bugtracker.entity.CommentVote;
 import com.bugtracker.entity.User;
@@ -22,7 +24,7 @@ public class CommentVoteService {
         this.userRepository = userRepository;
     }
 
-    public int vote(Long commentId, Long userId, VoteType voteType) {
+    public VoteResponse vote(Long commentId, Long userId, VoteType voteType) {
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Comment not found"));
@@ -58,7 +60,10 @@ public class CommentVoteService {
         // calculez scor
         long likes = commentVoteRepository.countByCommentIdAndVoteType(commentId, VoteType.LIKE);
         long dislikes = commentVoteRepository.countByCommentIdAndVoteType(commentId, VoteType.DISLIKE);
-
-        return (int) (likes - dislikes);
+        int score=(int)(likes-dislikes);
+        String currentStatus = commentVoteRepository.findByUserIdAndCommentId(userId, commentId)
+                .map(v -> v.getVoteType().toString())
+                .orElse(null);
+        return new VoteResponse(score,currentStatus);
     }
 }

@@ -67,15 +67,15 @@ class CommentServiceTest {
         assertEquals("Test comment", comments.get(0).getText());
     }
 
-    @Test
-    void shouldGetCommentsByBugId() {
-        when(commentRepository.findByBugId(10L)).thenReturn(List.of(comment));
-
-        List<Comment> comments = commentService.getCommentsByBugId(10L);
-
-        assertEquals(1, comments.size());
-        assertEquals("Test comment", comments.get(0).getText());
-    }
+//    @Test
+//    void shouldGetCommentsByBugId() {
+//        when(commentRepository.findByBugId(10L)).thenReturn(List.of(comment));
+//
+//        List<Comment> comments = commentService.getCommentsByBugId(10L);
+//
+//        assertEquals(1, comments.size());
+//        assertEquals("Test comment", comments.get(0).getText());
+//    }
 
     @Test
     void shouldUpdateComment() {

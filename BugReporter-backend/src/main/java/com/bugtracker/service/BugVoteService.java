@@ -1,5 +1,6 @@
 package com.bugtracker.service;
 
+import com.bugtracker.dto.VoteResponse;
 import com.bugtracker.entity.Bug;
 import com.bugtracker.entity.BugVote;
 import com.bugtracker.entity.User;
@@ -22,7 +23,7 @@ public class BugVoteService {
         this.userRepository = userRepository;
     }
 
-    public int vote(Long bugId, Long userId, VoteType voteType) {
+    public VoteResponse vote(Long bugId, Long userId, VoteType voteType) {
 
         Bug bug = bugRepository.findById(bugId)
                 .orElseThrow(() -> new RuntimeException("Bug not found"));
@@ -58,7 +59,10 @@ public class BugVoteService {
         // calculez scorul
         long likes = bugVoteRepository.countByBugIdAndVoteType(bugId, VoteType.LIKE);
         long dislikes = bugVoteRepository.countByBugIdAndVoteType(bugId, VoteType.DISLIKE);
-
-        return (int) (likes - dislikes);
+        int score=(int)(likes-dislikes);
+        String currentStatus = bugVoteRepository.findByUserIdAndBugId(userId, bugId)
+                .map(v -> v.getVoteType().toString())
+                .orElse(null);
+        return new VoteResponse(score,currentStatus);
     }
 }

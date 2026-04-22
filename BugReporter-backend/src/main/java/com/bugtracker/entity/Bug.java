@@ -54,6 +54,9 @@ public class Bug {
     @Transient  // face ca "score" sa nu fie bagat in baza de date
     private int score;
 
+    @Transient
+    private String userVoteType;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

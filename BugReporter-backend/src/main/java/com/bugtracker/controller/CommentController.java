@@ -21,6 +21,14 @@ public class CommentController {
         return commentService.getAllComments();
     }
 
+    @GetMapping("/bug/{bugId}")
+    public List<Comment> getCommentsByBugId(
+            @PathVariable Long bugId,
+            @RequestParam(required = false) Long userId) {
+        // Trimitem ambii parametri către service
+        return commentService.getCommentsByBugId(bugId, userId);
+    }
+
     @GetMapping("/{id}")
     public Comment getCommentById(@PathVariable Long id) {
         return commentService.getCommentById(id);

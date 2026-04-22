@@ -17,9 +17,9 @@ function BugDetail({ user }) {
 
   const loadData = async () => {
     try {
-      const bugData = await getBugById(id);
+      const bugData = await getBugById(id,user?.id);
       setBug(bugData);
-      const commentsData = await getCommentsByBugId(id);
+      const commentsData = await getCommentsByBugId(id, user?.id);
       setComments(commentsData);
     } catch (e) {
       setError(e.message);
@@ -103,39 +103,33 @@ function BugDetail({ user }) {
     }
   };
 
-  const handleVoteBug=async(type)=>{
+  const handleVoteBug = async (type) => {
     try {
       const response = await voteBug(id, user.id, type);
 
-      const userVote = bug.userVote === type ? null : type;
-
-      setBug({...bug, score: response.score, userVote});
+      setBug(prevBug => ({
+        ...prevBug,
+        score: response.score,
+        userVoteType: response.userVoteType
+      }));
     } catch (e) {
       alert(e.message);
     }
-  }
+  };
 
-  const handleVoteComment=async(commentId,type)=>{
+  const handleVoteComment = async (commentId, type) => {
     try {
       const response = await voteComment(commentId, user.id, type);
 
       setComments(prevComments =>
-          prevComments.map(c => {
-            if (c.id !== commentId) {
-              return c;
-            }
-
-            const userVote = c.userVote === type ? null : type;
-
-            return {
-              ...c,
-              score: response.score,
-              userVote
-            };
-          })
+          prevComments.map(c =>
+              c.id === commentId
+                  ? { ...c, score: response.score, userVoteType: response.userVoteType }
+                  : c
+          )
       );
-    } catch(e){
-      setError(e.message)
+    } catch(e) {
+      alert(e.message);
     }
   }
 
@@ -171,12 +165,14 @@ function BugDetail({ user }) {
         </div>
         <div className="vote-controls">
           <button
-              className={bug.userVote === 'LIKE' ? 'vote-like-active' : ''}
+              disabled={isAuthor}
+              className={bug.userVoteType === 'LIKE' ? 'vote-like-active' : ''}
               onClick={() => handleVoteBug('LIKE')}
           >👍🏼</button>
 
           <button
-              className={bug.userVote === 'DISLIKE' ? 'vote-dislike-active' : ''}
+              disabled={isAuthor}
+              className={bug.userVoteType === 'DISLIKE' ? 'vote-dislike-active' : ''}
               onClick={() => handleVoteBug('DISLIKE')}
           >👎🏼</button>
           <span>{bug.score || 0}</span>
@@ -197,57 +193,72 @@ function BugDetail({ user }) {
 
       <div>
         {comments.length === 0 ? (
-          <p>Niciun comentariu inca.</p>
+            <p>Niciun comentariu inca.</p>
         ) : (
-          comments.map(c => (
+            comments.map(c => {
+              // 1. Calculăm variabila AICI, după acoladă, dar înainte de return
+              const isCommentAuthor = user && c.author && user.id === c.author.id;
 
-            <div key={c.id} className="comment">
-              <div className="flex-between">
-                <div className="meta">
-                  {c.author?.username || 'Anonim'} &middot; {new Date(c.createdAt).toLocaleString()}
-                </div>
-                {user && c.author && user.id === c.author.id && (
-                  <div style={{ display: 'flex', gap: '0.3rem' }}>
-                    {editingCommentId !== c.id && (
-                      <button className="btn btn-secondary btn-sm" onClick={() => handleEditComment(c)}>Editeaza</button>
+              // 2. Trebuie să adăugăm explicit "return"
+              return (
+                  <div key={c.id} className="comment">
+                    <div className="flex-between">
+                      <div className="meta">
+                        {c.author?.username || 'Anonim'} &middot; {new Date(c.createdAt).toLocaleString()}
+                      </div>
+                      {isCommentAuthor && ( // Folosim variabila deja calculată
+                          <div style={{ display: 'flex', gap: '0.3rem' }}>
+                            {editingCommentId !== c.id && (
+                                <button className="btn btn-secondary btn-sm" onClick={() => handleEditComment(c)}>Editeaza</button>
+                            )}
+                            <button className="btn btn-danger btn-sm" onClick={() => handleDeleteComment(c.id)}>Sterge</button>
+                          </div>
+                      )}
+                    </div>
+
+                    {c.imageUrl && (
+                        <img src={`http://localhost:8080${c.imageUrl}`} alt="comment image" style={{ maxWidth: '100%', margin: '0.3rem 0', borderRadius: '4px' }} />
                     )}
-                    <button className="btn btn-danger btn-sm" onClick={() => handleDeleteComment(c.id)}>Sterge</button>
-                  </div>
-                )}
-              </div>
-              {c.imageUrl && (
-                <img src={`http://localhost:8080${c.imageUrl}`} alt="comment image" style={{ maxWidth: '100%', margin: '0.3rem 0', borderRadius: '4px' }} />
-              )}
-              {editingCommentId === c.id ? (
-                <div className="mt-1">
-                  <textarea
-                    value={editCommentText}
-                    onChange={e => setEditCommentText(e.target.value)}
-                    style={{ width: '100%', minHeight: '60px' }}
-                  />
-                  <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.3rem' }}>
-                    <button className="btn btn-primary btn-sm" onClick={() => handleSaveComment(c.id)}>Salveaza</button>
-                    <button className="btn btn-sm" onClick={handleCancelEdit} style={{ background: '#ccc' }}>Anuleaza</button>
-                  </div>
-                </div>
-              ) : (
-                <p className="mt-1">{c.text}</p>
-              )}
-              <div className="comment-vote-controls">
-                <button
-                    className={c.userVote === 'LIKE' ? 'vote-like-active' : ''}
-                    onClick={() => handleVoteComment(c.id, 'LIKE')}
-                >👍🏼</button>
 
-                <button
-                    className={c.userVote === 'DISLIKE' ? 'vote-dislike-active' : ''}
-                    onClick={() => handleVoteComment(c.id, 'DISLIKE')}
-                >👎🏼</button>
-                <span>{c.score || 0}</span>
-              </div>
-            </div>
+                    {editingCommentId === c.id ? (
+                        <div className="mt-1">
+              <textarea
+                  value={editCommentText}
+                  onChange={e => setEditCommentText(e.target.value)}
+                  style={{ width: '100%', minHeight: '60px' }}
+              />
+                          <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.3rem' }}>
+                            <button className="btn btn-primary btn-sm" onClick={() => handleSaveComment(c.id)}>Salveaza</button>
+                            <button className="btn btn-sm" onClick={handleCancelEdit} style={{ background: '#ccc' }}>Anuleaza</button>
+                          </div>
+                        </div>
+                    ) : (
+                        <p className="mt-1">{c.text}</p>
+                    )}
 
-          ))
+                    <div className="comment-vote-controls">
+                      <button
+                          disabled={isCommentAuthor}
+                          className={c.userVoteType === 'LIKE' ? 'vote-like-active' : ''}
+                          onClick={() => handleVoteComment(c.id, 'LIKE')}
+                          title={isCommentAuthor ? "Nu îți poți vota propriul comentariu" : ""}
+                      >
+                        👍🏼
+                      </button>
+
+                      <button
+                          disabled={isCommentAuthor}
+                          className={c.userVoteType === 'DISLIKE' ? 'vote-dislike-active' : ''}
+                          onClick={() => handleVoteComment(c.id, 'DISLIKE')}
+                          title={isCommentAuthor ? "Nu îți poți vota propriul comentariu" : ""}
+                      >
+                        👎🏼
+                      </button>
+                      <span>{c.score || 0}</span>
+                    </div>
+                  </div>
+              );
+            })
         )}
       </div>
 

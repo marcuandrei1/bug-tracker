@@ -52,8 +52,8 @@ public class BugController {
     }
 
     @GetMapping("/{id}")
-    public Bug getBugById(@PathVariable Long id) {
-        return bugService.getBugById(id);
+    public Bug getBugById(@PathVariable Long id, @RequestParam(required=false)Long userId) {
+        return bugService.getBugById(id, userId);
     }
 
     @PutMapping("/{id}")
@@ -67,8 +67,8 @@ public class BugController {
     }
 
     @GetMapping("/{bugId}/comments")
-    public List<Comment> getCommentsByBugId(@PathVariable Long bugId) {
-        return commentService.getCommentsByBugId(bugId);
+    public List<Comment> getCommentsByBugId(@PathVariable Long bugId, @RequestParam(required=false)Long userId) {
+        return commentService.getCommentsByBugId(bugId, userId);
     }
 
     @PutMapping("/{id}/solve")

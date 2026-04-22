@@ -89,6 +89,21 @@ public class BugService {
         return bug;
     }
 
+    public Bug getBugById(Long bugId, Long userId) {
+        Bug bug = bugRepository.findById(bugId).orElseThrow();
+
+        long likes = bugVoteRepository.countByBugIdAndVoteType(bugId, VoteType.LIKE);
+        long dislikes = bugVoteRepository.countByBugIdAndVoteType(bugId, VoteType.DISLIKE);
+
+        bug.setScore((int) (likes - dislikes));
+
+        if (userId!= null) {
+            bugVoteRepository.findByUserIdAndBugId(userId, bugId)
+                    .ifPresent(vote -> bug.setUserVoteType(vote.getVoteType().toString()));
+        }
+        return bug;
+    }
+
 
     // la updateBug, pentru lista de Tag-uri se poate modifica doar lista de taguri, nu sa modificam tagurile din interiorul unui bug
     public Bug updateBug(Long id, Bug updatedBug) {

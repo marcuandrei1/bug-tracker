@@ -46,14 +46,19 @@ public class CommentService {
         return commentRepository.findById(id).get();
     }
 
-    public List<Comment> getCommentsByBugId(Long bugId) {
+    public List<Comment> getCommentsByBugId(Long bugId, Long userId) {
         List<Comment> comments = commentRepository.findByBugId(bugId);
 
         for(Comment c : comments){
-            long likes=commentVoteRepository.countByCommentIdAndVoteType(c.getId(), VoteType.LIKE);
-            long dislikes=commentVoteRepository.countByCommentIdAndVoteType(c.getId(),VoteType.DISLIKE);
+            long likes = commentVoteRepository.countByCommentIdAndVoteType(c.getId(), VoteType.LIKE);
+            long dislikes = commentVoteRepository.countByCommentIdAndVoteType(c.getId(), VoteType.DISLIKE);
 
-            c.setScore((int)(likes-dislikes));
+            c.setScore((int)(likes - dislikes));
+
+            if (userId != null) {
+                commentVoteRepository.findByUserIdAndCommentId(userId, c.getId())
+                        .ifPresent(vote -> c.setUserVoteType(vote.getVoteType().toString()));
+            }
         }
 
         // afisez lista descrescator dupa numarul de voturi

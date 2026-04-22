@@ -40,9 +40,13 @@ export async function getBugs(params = {}) {
   if (!res.ok) throw new Error('Eroare la incarcarea bugurilor');
   return res.json();
 }
+export async function getBugById(id, userId) {
+  const url = userId
+      ? `${API}/bugs/${id}?userId=${userId}`
+      : `${API}/bugs/${id}`;
 
-export async function getBugById(id) {
-  const res = await fetch(`${API}/bugs/${id}`);
+  const res = await fetch(url);
+
   if (!res.ok) throw new Error('Bug negasit');
   return res.json();
 }
@@ -93,8 +97,11 @@ export async function voteBug(bugId, userId, voteType){
 
 // ---- COMMENTS ----
 
-export async function getCommentsByBugId(bugId) {
-  const res = await fetch(`${API}/bugs/${bugId}/comments`);
+export async function getCommentsByBugId(bugId, userId) {
+  const url = userId
+      ? `${API}/comments/bug/${bugId}?userId=${userId}`
+      : `${API}/comments/bug/${bugId}`;
+  const res = await fetch(url);
   if (!res.ok) throw new Error('Eroare la incarcarea comentariilor');
   return res.json();
 }
