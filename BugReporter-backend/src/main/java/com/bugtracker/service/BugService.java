@@ -139,6 +139,9 @@ public class BugService {
             bugVoteRepository.findByUserIdAndBugId(userId, bugId)
                     .ifPresent(vote -> bug.setUserVoteType(vote.getVoteType().toString()));
         }
+
+        bug.getAuthor().setScore(userScoreService.calculateScore(bug.getAuthor().getId()));
+
         return bug;
     }
 

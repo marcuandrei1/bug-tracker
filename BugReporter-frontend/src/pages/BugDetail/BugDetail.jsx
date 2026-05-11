@@ -173,13 +173,13 @@ function BugDetail({ user }) {
             disabled={isAuthor}
             className={bug.userVoteType === 'LIKE' ? 'vote-like-active' : ''}
             onClick={() => handleVoteBug('LIKE')}
-          >Like</button>
+          >👍🏼</button>
 
           <button
             disabled={isAuthor}
             className={bug.userVoteType === 'DISLIKE' ? 'vote-dislike-active' : ''}
             onClick={() => handleVoteBug('DISLIKE')}
-          >Dislike</button>
+          >👎🏼</button>
           <span>{bug.score || 0}</span>
         </div>
         {isAuthor && (
@@ -245,7 +245,7 @@ function BugDetail({ user }) {
                     onClick={() => handleVoteComment(c.id, 'LIKE')}
                     title={isCommentAuthor ? "Nu iti poti vota propriul comentariu" : ""}
                   >
-                    Like
+                    👍🏼
                   </button>
 
                   <button
@@ -254,7 +254,7 @@ function BugDetail({ user }) {
                     onClick={() => handleVoteComment(c.id, 'DISLIKE')}
                     title={isCommentAuthor ? "Nu iti poti vota propriul comentariu" : ""}
                   >
-                    Dislike
+                    👎🏼
                   </button>
                   <span>{c.score || 0}</span>
                 </div>
