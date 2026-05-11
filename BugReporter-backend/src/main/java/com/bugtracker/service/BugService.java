@@ -17,12 +17,14 @@ public class BugService {
     private final TagRepository tagRepository;
     private final UserRepository userRepository;
     private final BugVoteRepository bugVoteRepository;
+    private final UserScoreService userScoreService;
 
-    public BugService(BugRepository bugRepository, TagRepository tagRepository, UserRepository userRepository, BugVoteRepository bugVoteRepository) {
+    public BugService(BugRepository bugRepository, TagRepository tagRepository, UserRepository userRepository, BugVoteRepository bugVoteRepository, UserScoreService userScoreService) {
         this.bugRepository = bugRepository;
         this.tagRepository = tagRepository;
         this.userRepository = userRepository;
         this.bugVoteRepository = bugVoteRepository;
+        this.userScoreService = userScoreService;
     }
 
     public Bug createBug(Bug bug) {
@@ -49,34 +51,68 @@ public class BugService {
      * Metoda getAllBugs returneaza deja in ordine descrescatoare bugg-urile dupa campul createdAt
      * */
     public List<Bug> getAllBugs() {
-        return bugRepository.findAllByOrderByCreatedAtDesc();
+        List<Bug> bugs = bugRepository.findAllByOrderByCreatedAtDesc();
+
+        for (Bug bug : bugs) {
+            bug.getAuthor().setScore(userScoreService.calculateScore(bug.getAuthor().getId()));
+        }
+
+        return bugs;
     }
 
     public List<Bug> getBugsByAuthor(Long authorId) {
-        return bugRepository.findByAuthorIdOrderByCreatedAtDesc(authorId);
+        List<Bug> bugs = bugRepository.findByAuthorIdOrderByCreatedAtDesc(authorId);
+
+        for (Bug bug : bugs) {
+            bug.getAuthor().setScore(userScoreService.calculateScore(bug.getAuthor().getId()));
+        }
+
+        return bugs;
     }
 
     public List<Bug> searchByTitle(String title) {
-        return bugRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(title);
+        List<Bug> bugs = bugRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(title);
+
+        for (Bug bug : bugs) {
+            bug.getAuthor().setScore(userScoreService.calculateScore(bug.getAuthor().getId()));
+        }
+
+        return bugs;
     }
 
     public List<Bug> getBugsByTags(String... tagNames) {
+        List<Bug> bugs;
+
         if (tagNames == null || tagNames.length == 0) {
-            return bugRepository.findAllByOrderByCreatedAtDesc();
+            bugs = bugRepository.findAllByOrderByCreatedAtDesc();
+        } else {
+            bugs = bugRepository.findDistinctByTags_NameInOrderByCreatedAtDesc(Arrays.asList(tagNames));
         }
 
-        return bugRepository.findDistinctByTags_NameInOrderByCreatedAtDesc(Arrays.asList(tagNames));
+        for (Bug bug : bugs) {
+            bug.getAuthor().setScore(userScoreService.calculateScore(bug.getAuthor().getId()));
+        }
+
+        return bugs;
     }
 
     public List<Bug> getBugsByAuthorAndTags(Long authorId, String... tagNames) {
+        List<Bug> bugs;
+
         if (tagNames == null || tagNames.length == 0) {
-            return bugRepository.findByAuthorIdOrderByCreatedAtDesc(authorId);
+            bugs = bugRepository.findByAuthorIdOrderByCreatedAtDesc(authorId);
+        } else {
+            bugs = bugRepository.findByAuthorIdAndTags_NameInOrderByCreatedAtDesc(
+                    authorId,
+                    Arrays.asList(tagNames)
+            );
         }
 
-        return bugRepository.findByAuthorIdAndTags_NameInOrderByCreatedAtDesc(
-                authorId,
-                Arrays.asList(tagNames)
-        );
+        for (Bug bug : bugs) {
+            bug.getAuthor().setScore(userScoreService.calculateScore(bug.getAuthor().getId()));
+        }
+
+        return bugs;
     }
 
     public Bug getBugById(Long id) {
@@ -86,6 +122,8 @@ public class BugService {
         long dislikes = bugVoteRepository.countByBugIdAndVoteType(id, VoteType.DISLIKE);
 
         bug.setScore((int) (likes - dislikes));
+        bug.getAuthor().setScore(userScoreService.calculateScore(bug.getAuthor().getId()));
+
         return bug;
     }
 

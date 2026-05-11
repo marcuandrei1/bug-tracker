@@ -17,11 +17,13 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final BugRepository bugRepository;
     private final CommentVoteRepository commentVoteRepository;
+    private final UserScoreService userScoreService;
 
-    public CommentService(CommentRepository commentRepository, BugRepository bugRepository, CommentVoteRepository commentVoteRepository) {
+    public CommentService(CommentRepository commentRepository, BugRepository bugRepository, CommentVoteRepository commentVoteRepository, UserScoreService userScoreService) {
         this.commentRepository = commentRepository;
         this.bugRepository = bugRepository;
         this.commentVoteRepository = commentVoteRepository;
+        this.userScoreService = userScoreService;
     }
 
     public Comment createComment(Comment comment) {
@@ -49,7 +51,7 @@ public class CommentService {
     public List<Comment> getCommentsByBugId(Long bugId, Long userId) {
         List<Comment> comments = commentRepository.findByBugId(bugId);
 
-        for(Comment c : comments){
+        for (Comment c : comments){
             long likes = commentVoteRepository.countByCommentIdAndVoteType(c.getId(), VoteType.LIKE);
             long dislikes = commentVoteRepository.countByCommentIdAndVoteType(c.getId(), VoteType.DISLIKE);
 
@@ -59,6 +61,8 @@ public class CommentService {
                 commentVoteRepository.findByUserIdAndCommentId(userId, c.getId())
                         .ifPresent(vote -> c.setUserVoteType(vote.getVoteType().toString()));
             }
+
+            c.getAuthor().setScore(userScoreService.calculateScore(c.getAuthor().getId()));
         }
 
         // afisez lista descrescator dupa numarul de voturi

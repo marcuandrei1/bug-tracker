@@ -1,3 +1,4 @@
+
 package com.bugtracker.repository;
 
 import com.bugtracker.entity.BugVote;
@@ -11,4 +12,7 @@ public interface BugVoteRepository extends JpaRepository<BugVote, Long> {
     Optional<BugVote> findByUserIdAndBugId(Long userId, Long bugId);
 
     long countByBugIdAndVoteType(Long bugId, VoteType voteType);
+
+    long countByBugAuthorIdAndVoteType(Long authorId, VoteType voteType);
 }
+

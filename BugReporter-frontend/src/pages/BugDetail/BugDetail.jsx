@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { getBugById, getCommentsByBugId, createComment, deleteBug, voteBug, deleteComment, updateComment, voteComment,uploadFile, markBugAsSolved } from '../../api';
+import { getBugById, getCommentsByBugId, createComment, deleteBug, voteBug, deleteComment, updateComment, voteComment, uploadFile, markBugAsSolved } from '../../api';
 import './BugDetail.css';
 
 function BugDetail({ user }) {
@@ -17,7 +17,7 @@ function BugDetail({ user }) {
 
   const loadData = async () => {
     try {
-      const bugData = await getBugById(id,user?.id);
+      const bugData = await getBugById(id, user?.id);
       setBug(bugData);
       const commentsData = await getCommentsByBugId(id, user?.id);
       setComments(commentsData);
@@ -112,6 +112,8 @@ function BugDetail({ user }) {
         score: response.score,
         userVoteType: response.userVoteType
       }));
+
+      loadData();
     } catch (e) {
       alert(e.message);
     }
@@ -122,22 +124,25 @@ function BugDetail({ user }) {
       const response = await voteComment(commentId, user.id, type);
 
       setComments(prevComments =>
-          prevComments.map(c =>
-              c.id === commentId
-                  ? { ...c, score: response.score, userVoteType: response.userVoteType }
-                  : c
-          )
+        prevComments.map(c =>
+          c.id === commentId
+            ? { ...c, score: response.score, userVoteType: response.userVoteType }
+            : c
+        )
       );
-    } catch(e) {
+
+      loadData();
+    } catch (e) {
       alert(e.message);
     }
-  }
+  };
 
   if (loading) return <div className="container"><p>Se incarca...</p></div>;
   if (error && !bug) return <div className="container"><p style={{ color: 'red' }}>{error}</p></div>;
   if (!bug) return <div className="container"><p style={{ color: 'red' }}>Bug negasit.</p></div>;
 
   const isAuthor = user && bug.author && user.id === bug.author.id;
+  const formatUserScore = (score) => `${Number(score ?? 0).toFixed(1)} puncte`;
 
   return (
     <div className="container">
@@ -152,7 +157,7 @@ function BugDetail({ user }) {
         </div>
 
         <div className="meta">
-          De {bug.author?.username || 'Anonim'} &middot; {new Date(bug.createdAt).toLocaleString()}
+          De {bug.author?.username || 'Anonim'} ({formatUserScore(bug.author?.score)}) &middot; {new Date(bug.createdAt).toLocaleString()}
         </div>
         {bug.imageUrl && (
           <img src={`http://localhost:8080${bug.imageUrl}`} alt="bug image" style={{ maxWidth: '100%', margin: '0.5rem 0', borderRadius: '6px' }} />
@@ -165,18 +170,17 @@ function BugDetail({ user }) {
         </div>
         <div className="vote-controls">
           <button
-              disabled={isAuthor}
-              className={bug.userVoteType === 'LIKE' ? 'vote-like-active' : ''}
-              onClick={() => handleVoteBug('LIKE')}
-          >👍🏼</button>
+            disabled={isAuthor}
+            className={bug.userVoteType === 'LIKE' ? 'vote-like-active' : ''}
+            onClick={() => handleVoteBug('LIKE')}
+          >Like</button>
 
           <button
-              disabled={isAuthor}
-              className={bug.userVoteType === 'DISLIKE' ? 'vote-dislike-active' : ''}
-              onClick={() => handleVoteBug('DISLIKE')}
-          >👎🏼</button>
+            disabled={isAuthor}
+            className={bug.userVoteType === 'DISLIKE' ? 'vote-dislike-active' : ''}
+            onClick={() => handleVoteBug('DISLIKE')}
+          >Dislike</button>
           <span>{bug.score || 0}</span>
-
         </div>
         {isAuthor && (
           <div className="mt-1" style={{ display: 'flex', gap: '0.5rem' }}>
@@ -193,72 +197,70 @@ function BugDetail({ user }) {
 
       <div>
         {comments.length === 0 ? (
-            <p>Niciun comentariu inca.</p>
+          <p>Niciun comentariu inca.</p>
         ) : (
-            comments.map(c => {
-              // 1. Calculăm variabila AICI, după acoladă, dar înainte de return
-              const isCommentAuthor = user && c.author && user.id === c.author.id;
+          comments.map(c => {
+            const isCommentAuthor = user && c.author && user.id === c.author.id;
 
-              // 2. Trebuie să adăugăm explicit "return"
-              return (
-                  <div key={c.id} className="comment">
-                    <div className="flex-between">
-                      <div className="meta">
-                        {c.author?.username || 'Anonim'} &middot; {new Date(c.createdAt).toLocaleString()}
-                      </div>
-                      {isCommentAuthor && ( // Folosim variabila deja calculată
-                          <div style={{ display: 'flex', gap: '0.3rem' }}>
-                            {editingCommentId !== c.id && (
-                                <button className="btn btn-secondary btn-sm" onClick={() => handleEditComment(c)}>Editeaza</button>
-                            )}
-                            <button className="btn btn-danger btn-sm" onClick={() => handleDeleteComment(c.id)}>Sterge</button>
-                          </div>
+            return (
+              <div key={c.id} className="comment">
+                <div className="flex-between">
+                  <div className="meta">
+                    {c.author?.username || 'Anonim'} ({formatUserScore(c.author?.score)}) &middot; {new Date(c.createdAt).toLocaleString()}
+                  </div>
+                  {isCommentAuthor && (
+                    <div style={{ display: 'flex', gap: '0.3rem' }}>
+                      {editingCommentId !== c.id && (
+                        <button className="btn btn-secondary btn-sm" onClick={() => handleEditComment(c)}>Editeaza</button>
                       )}
+                      <button className="btn btn-danger btn-sm" onClick={() => handleDeleteComment(c.id)}>Sterge</button>
                     </div>
+                  )}
+                </div>
 
-                    {c.imageUrl && (
-                        <img src={`http://localhost:8080${c.imageUrl}`} alt="comment image" style={{ maxWidth: '100%', margin: '0.3rem 0', borderRadius: '4px' }} />
-                    )}
+                {c.imageUrl && (
+                  <img src={`http://localhost:8080${c.imageUrl}`} alt="comment image" style={{ maxWidth: '100%', margin: '0.3rem 0', borderRadius: '4px' }} />
+                )}
 
-                    {editingCommentId === c.id ? (
-                        <div className="mt-1">
-              <textarea
-                  value={editCommentText}
-                  onChange={e => setEditCommentText(e.target.value)}
-                  style={{ width: '100%', minHeight: '60px' }}
-              />
-                          <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.3rem' }}>
-                            <button className="btn btn-primary btn-sm" onClick={() => handleSaveComment(c.id)}>Salveaza</button>
-                            <button className="btn btn-sm" onClick={handleCancelEdit} style={{ background: '#ccc' }}>Anuleaza</button>
-                          </div>
-                        </div>
-                    ) : (
-                        <p className="mt-1">{c.text}</p>
-                    )}
-
-                    <div className="comment-vote-controls">
-                      <button
-                          disabled={isCommentAuthor}
-                          className={c.userVoteType === 'LIKE' ? 'vote-like-active' : ''}
-                          onClick={() => handleVoteComment(c.id, 'LIKE')}
-                          title={isCommentAuthor ? "Nu îți poți vota propriul comentariu" : ""}
-                      >
-                        👍🏼
-                      </button>
-
-                      <button
-                          disabled={isCommentAuthor}
-                          className={c.userVoteType === 'DISLIKE' ? 'vote-dislike-active' : ''}
-                          onClick={() => handleVoteComment(c.id, 'DISLIKE')}
-                          title={isCommentAuthor ? "Nu îți poți vota propriul comentariu" : ""}
-                      >
-                        👎🏼
-                      </button>
-                      <span>{c.score || 0}</span>
+                {editingCommentId === c.id ? (
+                  <div className="mt-1">
+                    <textarea
+                      value={editCommentText}
+                      onChange={e => setEditCommentText(e.target.value)}
+                      style={{ width: '100%', minHeight: '60px' }}
+                    />
+                    <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.3rem' }}>
+                      <button className="btn btn-primary btn-sm" onClick={() => handleSaveComment(c.id)}>Salveaza</button>
+                      <button className="btn btn-sm" onClick={handleCancelEdit} style={{ background: '#ccc' }}>Anuleaza</button>
                     </div>
                   </div>
-              );
-            })
+                ) : (
+                  <p className="mt-1">{c.text}</p>
+                )}
+
+                <div className="comment-vote-controls">
+                  <button
+                    disabled={isCommentAuthor}
+                    className={c.userVoteType === 'LIKE' ? 'vote-like-active' : ''}
+                    onClick={() => handleVoteComment(c.id, 'LIKE')}
+                    title={isCommentAuthor ? "Nu iti poti vota propriul comentariu" : ""}
+                  >
+                    Like
+                  </button>
+
+                  <button
+                    disabled={isCommentAuthor}
+                    className={c.userVoteType === 'DISLIKE' ? 'vote-dislike-active' : ''}
+                    onClick={() => handleVoteComment(c.id, 'DISLIKE')}
+                    title={isCommentAuthor ? "Nu iti poti vota propriul comentariu" : ""}
+                  >
+                    Dislike
+                  </button>
+                  <span>{c.score || 0}</span>
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
 

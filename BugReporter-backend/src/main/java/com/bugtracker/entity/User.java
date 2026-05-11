@@ -32,6 +32,9 @@ public class User {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Transient
+    private double score;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

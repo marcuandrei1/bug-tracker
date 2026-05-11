@@ -54,6 +54,8 @@ function Bugs({ user }) {
     ? bugs.filter(b => b.author?.id === user.id)
     : bugs;
 
+  const formatUserScore = (score) => `${Number(score ?? 0).toFixed(1)} puncte`;
+
   return (
     <div className="container">
       <div className="filters">
@@ -108,7 +110,7 @@ function Bugs({ user }) {
                 </span>
               </div>
               <div className="meta">
-                De {bug.author?.username || 'Anonim'} &middot; {new Date(bug.createdAt).toLocaleString()}
+                De {bug.author?.username || 'Anonim'} ({formatUserScore(bug.author?.score)}) &middot; {new Date(bug.createdAt).toLocaleString()}
               </div>
               <p>
                 {bug.text?.substring(0, 150) || ''}
