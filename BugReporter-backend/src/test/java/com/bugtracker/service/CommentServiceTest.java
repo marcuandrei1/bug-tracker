@@ -1,6 +1,9 @@
 package com.bugtracker.service;
 
+import com.bugtracker.entity.Bug;
+import com.bugtracker.entity.BugStatus;
 import com.bugtracker.entity.Comment;
+import com.bugtracker.repository.BugRepository;
 import com.bugtracker.repository.CommentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +21,9 @@ class CommentServiceTest {
     @Mock
     private CommentRepository commentRepository;
 
+    @Mock
+    private BugRepository bugRepository;
+
     @InjectMocks
     private CommentService commentService;
     private Comment comment;
@@ -33,10 +39,17 @@ class CommentServiceTest {
 
     @Test
     void shouldCreateComment() {
+        Bug bug= new Bug();
+        bug.setId(10L);
+        bug.setStatus(BugStatus.IN_PROGRESS);
+        comment.setBug(bug);
+
+        when(bugRepository.findById(10L)).thenReturn(Optional.of(bug));
         when(commentRepository.save(comment)).thenReturn(comment);
 
         Comment created = commentService.createComment(comment);
 
+        assertNotNull(created);
         assertEquals("Test comment", created.getText());
         verify(commentRepository, times(1)).save(comment);
     }
@@ -67,16 +80,6 @@ class CommentServiceTest {
         assertEquals("Test comment", comments.get(0).getText());
     }
 
-//    @Test
-//    void shouldGetCommentsByBugId() {
-//        when(commentRepository.findByBugId(10L)).thenReturn(List.of(comment));
-//
-//        List<Comment> comments = commentService.getCommentsByBugId(10L);
-//
-//        assertEquals(1, comments.size());
-//        assertEquals("Test comment", comments.get(0).getText());
-//    }
-
     @Test
     void shouldUpdateComment() {
         Comment updated = new Comment();
@@ -98,5 +101,21 @@ class CommentServiceTest {
         commentService.deleteComment(1L);
 
         verify(commentRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void shouldChangeBugStatusToInProgressOnFirstComment(){
+        // cream un bug si ii atribuim un comentariu
+        Bug bug=new Bug();
+        bug.setId(10L);
+        bug.setStatus(BugStatus.RECEIVED);
+        comment.setBug(bug);
+
+        when(commentRepository.save(comment)).thenReturn(comment);
+        when(bugRepository.findById(10L)).thenReturn(Optional.of(bug));
+
+        commentService.createComment(comment);
+
+        assertEquals(BugStatus.IN_PROGRESS,bug.getStatus());
     }
 }

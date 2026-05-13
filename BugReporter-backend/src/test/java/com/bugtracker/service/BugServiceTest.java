@@ -1,9 +1,8 @@
 package com.bugtracker.service;
 
-import com.bugtracker.entity.Bug;
-import com.bugtracker.entity.BugStatus;
-import com.bugtracker.entity.User;
+import com.bugtracker.entity.*;
 import com.bugtracker.repository.BugRepository;
+import com.bugtracker.repository.BugVoteRepository;
 import com.bugtracker.repository.TagRepository;
 import com.bugtracker.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,10 +22,16 @@ class BugServiceTest {
     private BugRepository bugRepository;
 
     @Mock
+    private BugVoteRepository bugVoteRepository;
+
+    @Mock
     private TagRepository tagRepository;
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private UserScoreService userScoreService;
 
     @InjectMocks
     private BugService bugService;
@@ -64,23 +69,34 @@ class BugServiceTest {
     @Test
     void shouldGetAllBugs() {
         when(bugRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(bug));
+        when(userScoreService.calculateScore(1L)).thenReturn(100.0);
 
         List<Bug> bugs = bugService.getAllBugs();
 
         assertEquals(1, bugs.size());
         assertEquals("Sample Bug", bugs.get(0).getTitle());
+        assertEquals(100.0, bugs.get(0).getAuthor().getScore());
         verify(bugRepository, times(1)).findAllByOrderByCreatedAtDesc();
     }
 
     @Test
-    void shouldGetBugById() {
+    void shouldGetBugByIdWithScore() {
+        Long userId=1L, bugId=1L;
         when(bugRepository.findById(1L)).thenReturn(Optional.of(bug));
 
-        Bug found = bugService.getBugById(1L);
+        // simuleaza faptul ca in baza de date avem 2 likeuri si 1 dislike pentru bugul cu id 1
+        when(bugVoteRepository.countByBugIdAndVoteType(bugId, VoteType.LIKE)).thenReturn(2L);
+        when(bugVoteRepository.countByBugIdAndVoteType(bugId, VoteType.DISLIKE)).thenReturn(1L);
 
-        assertNotNull(found);
-        assertEquals("Sample Bug", found.getTitle());
-        verify(bugRepository, times(1)).findById(1L);
+        // simuleaza ca userul cu id 1 a votat deja bugul 1 cu LIKE
+        BugVote vote= new BugVote(author, bug, VoteType.LIKE);
+        when(bugVoteRepository.findByUserIdAndBugId(userId,bugId)).thenReturn(Optional.of(vote));
+
+        Bug found = bugService.getBugById(1L,userId);
+
+        // verificam daca scorul este 1 si tipul votului este like
+        assertEquals(1, found.getScore());
+        assertEquals("LIKE",found.getUserVoteType());
     }
 
     @Test
@@ -88,7 +104,7 @@ class BugServiceTest {
         when(bugRepository.findById(2L)).thenReturn(Optional.empty());
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> bugService.getBugById(2L));
-        assertEquals("Bug not found", ex.getMessage());
+        assertEquals("No value present", ex.getMessage());
         verify(bugRepository, times(1)).findById(2L);
     }
 
