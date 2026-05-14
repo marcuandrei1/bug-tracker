@@ -68,6 +68,9 @@ jobs:
         working-directory: ./BugReporter-frontend
         run: npm ci
 
-      - name: Run Cypress tests
+      - name: Start frontend
         working-directory: ./BugReporter-frontend
-        run: npx cypress run
+        run: npm run dev &
+      - name: Run Cypress
+        working-directory: ./BugReporter-frontend
+        run: npx cypress run --config baseUrl=http://localhost:5173
