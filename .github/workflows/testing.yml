@@ -59,16 +59,15 @@ jobs:
       - name: Start Spring Boot Application
         working-directory: ./BugReporter-backend
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/bugtracker_test
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/bugtracker
           SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: postgres
+          SPRING_DATASOURCE_PASSWORD: password
         run: mvn spring-boot:run &
 
-      - name: Run Cypress
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: ./BugReporter-frontend
-          install-command: npm install
-          start: npm run dev
-          wait-on: 'http://localhost:5173'
-          browser: edge
+      - name: Install frontend dependencies
+        working-directory: ./BugReporter-frontend
+        run: npm ci
+
+      - name: Run Cypress tests
+        working-directory: ./BugReporter-frontend
+        run: npx cypress run
