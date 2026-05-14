@@ -264,26 +264,32 @@ function BugDetail({ user }) {
         )}
       </div>
 
-      <div className="card mt-2">
-        <h4>Adauga comentariu</h4>
-        <div className="form-group">
-          <textarea
-            placeholder="Scrie un comentariu..."
-            value={commentText}
-            onChange={e => setCommentText(e.target.value)}
-          />
+      {bug.status === 'SOLVED' ? (
+        <div className="card mt-2">
+          <p style={{ color: '#888', fontStyle: 'italic' }}>Acest bug a fost rezolvat. Nu se mai pot adauga comentarii.</p>
         </div>
-        <div className="form-group">
-          <label>Imagine (optional)</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={e => setCommentImageFile(e.target.files[0] || null)}
-          />
+      ) : (
+        <div className="card mt-2">
+          <h4>Adauga comentariu</h4>
+          <div className="form-group">
+            <textarea
+              placeholder="Scrie un comentariu..."
+              value={commentText}
+              onChange={e => setCommentText(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label>Imagine (optional)</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={e => setCommentImageFile(e.target.files[0] || null)}
+            />
+          </div>
+          <button className="btn btn-primary" onClick={handleAddComment}>Trimite</button>
+          {error && <p style={{ color: 'red', marginTop: '0.5rem' }}>{error}</p>}
         </div>
-        <button className="btn btn-primary" onClick={handleAddComment}>Trimite</button>
-        {error && <p style={{ color: 'red', marginTop: '0.5rem' }}>{error}</p>}
-      </div>
+      )}
     </div>
   );
 }

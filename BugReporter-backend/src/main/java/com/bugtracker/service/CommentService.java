@@ -27,11 +27,15 @@ public class CommentService {
     }
 
     public Comment createComment(Comment comment) {
-        Comment saved = commentRepository.save(comment);
-
-        // Daca e primul comentariu pe bug, schimbam statusul in IN_PROGRESS
         Bug bug = bugRepository.findById(comment.getBug().getId())
                 .orElseThrow(() -> new RuntimeException("Bug not found"));
+
+        if (bug.getStatus() == BugStatus.SOLVED) {
+            throw new RuntimeException("Cannot add comments to a solved bug");
+        }
+
+        Comment saved = commentRepository.save(comment);
+
         if (bug.getStatus() == BugStatus.RECEIVED) {
             bug.setStatus(BugStatus.IN_PROGRESS);
             bugRepository.save(bug);
