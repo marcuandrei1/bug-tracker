@@ -70,7 +70,7 @@ jobs:
 
       - name: Install Cypress
         working-directory: ./BugReporter-frontend
-        run: npx cypress install
+        run: npm install cypress
 
       - name: Start frontend
         working-directory: ./BugReporter-frontend
