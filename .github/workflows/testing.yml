@@ -19,6 +19,7 @@ jobs:
             distribution: temurin
             cache: maven
         - name: Run Spring Boot Tests
+          working-directory: ./BugReporter-backend
           run: mvn test
         
     cypress-tests:
@@ -32,6 +33,7 @@ jobs:
             java-version: 25
             distribution: temurin
         - name: Start Spring Boot Application
+          working-directory: ./BugReporter-backend
           run: mvn spring-boot:run &
 
         - name: Run Cypress
