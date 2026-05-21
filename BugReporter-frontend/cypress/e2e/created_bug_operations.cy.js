@@ -45,7 +45,7 @@ describe('Bug operations', () => {
     cy.get('textarea')
       .type('Si eu am patit asta si cred ca e problema de la Digi. Nu avem ce sa facem pana nu rezolva ei asta.');
     
-    // cy.get('.btn').click();
+    cy.get('.btn').click();
   });
 
   it('comment reply', function() {

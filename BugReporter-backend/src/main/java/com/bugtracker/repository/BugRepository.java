@@ -12,7 +12,7 @@ public interface BugRepository extends JpaRepository<Bug, Long> {
 
     List<Bug> findByAuthorIdOrderByCreatedAtDesc(Long authorId);
 
-    List<Bug> findDistinctByTags_NameInOrderByCreatedAtDesc(Collection<String> tagNames);
+    List<Bug> findDistinctByTagsNameInOrderByCreatedAtDesc(Collection<String> tagNames);
 
     List<Bug> findByAuthorIdAndTags_NameInOrderByCreatedAtDesc(Long authorId, Collection<String> tagNames);
 

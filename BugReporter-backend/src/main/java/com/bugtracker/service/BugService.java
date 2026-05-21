@@ -89,7 +89,7 @@ public class BugService {
         if (tagNames == null || tagNames.length == 0) {
             bugs = bugRepository.findAllByOrderByCreatedAtDesc();
         } else {
-            bugs = bugRepository.findDistinctByTags_NameInOrderByCreatedAtDesc(Arrays.asList(tagNames));
+            bugs = bugRepository.findDistinctByTagsNameInOrderByCreatedAtDesc(Arrays.asList(tagNames));
         }
 
         for (Bug bug : bugs) {
