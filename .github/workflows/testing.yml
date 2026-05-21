@@ -35,6 +35,13 @@ jobs:
           distribution: temurin
           cache: maven
 
+      - name: Create database initialization script
+        run: |
+          mkdir -p /tmp
+          echo "CREATE SCHEMA IF NOT EXISTS bugtracker;" > /tmp/init-db.sql
+        env:
+          HOME: /tmp
+
       - name: Run Spring Boot Tests
         working-directory: ./BugReporter-backend
         env:
