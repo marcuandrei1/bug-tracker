@@ -105,7 +105,7 @@ public class BugService {
         if (tagNames == null || tagNames.length == 0) {
             bugs = bugRepository.findByAuthorIdOrderByCreatedAtDesc(authorId);
         } else {
-            bugs = bugRepository.findByAuthorIdAndTags_NameInOrderByCreatedAtDesc(
+            bugs = bugRepository.findByAuthorIdAndTagsNameInOrderByCreatedAtDesc(
                     authorId,
                     Arrays.asList(tagNames)
             );
