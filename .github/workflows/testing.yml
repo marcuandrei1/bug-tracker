@@ -38,7 +38,7 @@ jobs:
       - name: Create database initialization script
         run: |
           mkdir -p /tmp
-          echo "CREATE SCHEMA IF NOT EXISTS bugtracker_test;" > /tmp/init-db.sql
+          echo "CREATE SCHEMA IF NOT EXISTS bugtracker;" > /tmp/init-db.sql
         env:
           HOME: /tmp
 
