@@ -1,6 +1,7 @@
 package com.bugtracker.controller;
 
 import com.bugtracker.entity.Comment;
+import com.bugtracker.entity.Role;
 import com.bugtracker.service.CommentService;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,7 +46,10 @@ public class CommentController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteComment(@PathVariable Long id) {
-        commentService.deleteComment(id);
+    public void deleteComment(
+            @PathVariable Long id,
+            @RequestHeader("X-Current-User-Id") Long currentUserId,
+            @RequestHeader("X-Current-User-Role") String currentUserRole) {
+        commentService.deleteComment(id, currentUserId, Role.valueOf(currentUserRole));
     }
 }

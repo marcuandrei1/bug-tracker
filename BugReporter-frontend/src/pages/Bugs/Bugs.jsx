@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getBugs } from '../../api';
+import { getBugs, getStats } from '../../api';
 import './Bugs.css';
 
 function Bugs({ user }) {
@@ -12,6 +12,7 @@ function Bugs({ user }) {
   const [userFilter, setUserFilter] = useState('');
   const [myBugs, setMyBugs] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState(null);
 
   const loadBugs = async (params = {}) => {
     setLoading(true);
@@ -26,6 +27,7 @@ function Bugs({ user }) {
 
   useEffect(() => {
     loadBugs();
+    getStats().then(setStats).catch(() => {});
   }, []);
 
   const handleFilter = () => {
@@ -125,6 +127,16 @@ function Bugs({ user }) {
           ))
         )}
       </div>
+      {stats && (
+        <div className="stats-bar">
+          <span>Total buguri: <strong>{stats.totalBugs}</strong></span>
+          <span>Received: <strong>{stats.received}</strong></span>
+          <span>In Progress: <strong>{stats.inProgress}</strong></span>
+          <span>Solved: <strong>{stats.solved}</strong></span>
+          <span>Comentarii: <strong>{stats.totalComments}</strong></span>
+          <span>Utilizatori: <strong>{stats.totalUsers}</strong></span>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ package com.bugtracker.service;
 import com.bugtracker.entity.Bug;
 import com.bugtracker.entity.BugStatus;
 import com.bugtracker.entity.Comment;
+import com.bugtracker.entity.Role;
 import com.bugtracker.entity.VoteType;
 import com.bugtracker.repository.BugRepository;
 import com.bugtracker.repository.CommentRepository;
@@ -90,7 +91,14 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
-    public void deleteComment(Long id) {
+    public void deleteComment(Long id, Long currentUserId, Role currentUserRole) {
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        if (!comment.getAuthor().getId().equals(currentUserId) && currentUserRole != Role.MODERATOR) {
+            throw new RuntimeException("Nu ai permisiunea sa stergi acest comentariu");
+        }
+
         commentRepository.deleteById(id);
     }
 }

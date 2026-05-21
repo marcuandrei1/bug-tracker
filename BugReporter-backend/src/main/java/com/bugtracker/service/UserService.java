@@ -84,7 +84,7 @@ public class UserService {
         User user=userRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("User not found"));
 
-        user.setBanned(true);
+        user.setBanned(false);
         return userRepository.save(user);
     }
 

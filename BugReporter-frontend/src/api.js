@@ -211,6 +211,14 @@ export async function getAllUsers() {
   return res.json();
 }
 
+// ---- STATS ----
+
+export async function getStats() {
+  const res = await fetch(`${API}/stats`);
+  if (!res.ok) throw new Error('Eroare la incarcarea statisticilor');
+  return res.json();
+}
+
 // ---- FILES ----
 
 export async function uploadFile(file) {
