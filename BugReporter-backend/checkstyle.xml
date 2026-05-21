@@ -6,21 +6,17 @@
 <module name="Checker">
     <property name="fileExtensions" value="java"/>
 
-    <!-- Nu permite tab-uri, doar spatii -->
     <module name="FileTabCharacter"/>
 
-    <!-- Lungime maxima linie: 200 caractere -->
     <module name="LineLength">
         <property name="max" value="200"/>
     </module>
 
     <module name="TreeWalker">
 
-        <!-- Importuri -->
         <module name="UnusedImports"/>
         <module name="AvoidStarImport"/>
 
-        <!-- Conventii de denumire -->
         <module name="TypeName"/>
         <module name="MethodName"/>
         <module name="LocalVariableName"/>

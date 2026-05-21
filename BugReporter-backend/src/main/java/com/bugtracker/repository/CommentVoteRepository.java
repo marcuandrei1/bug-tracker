@@ -1,5 +1,3 @@
-
-
 package com.bugtracker.repository;
 
 import com.bugtracker.entity.CommentVote;

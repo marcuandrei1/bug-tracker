@@ -1,6 +1,5 @@
 package com.bugtracker.service;
 
-import com.bugtracker.dto.VoteRequest;
 import com.bugtracker.dto.VoteResponse;
 import com.bugtracker.entity.Comment;
 import com.bugtracker.entity.CommentVote;
