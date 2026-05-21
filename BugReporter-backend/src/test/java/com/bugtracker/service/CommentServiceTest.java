@@ -3,6 +3,8 @@ package com.bugtracker.service;
 import com.bugtracker.entity.Bug;
 import com.bugtracker.entity.BugStatus;
 import com.bugtracker.entity.Comment;
+import com.bugtracker.entity.Role;
+import com.bugtracker.entity.User;
 import com.bugtracker.repository.BugRepository;
 import com.bugtracker.repository.CommentRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -96,9 +98,14 @@ class CommentServiceTest {
 
     @Test
     void shouldDeleteComment() {
+        User author = new User();
+        author.setId(1L);
+        comment.setAuthor(author);
+
+        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
         doNothing().when(commentRepository).deleteById(1L);
 
-        commentService.deleteComment(1L);
+        commentService.deleteComment(1L, 1L, Role.USER);
 
         verify(commentRepository, times(1)).deleteById(1L);
     }

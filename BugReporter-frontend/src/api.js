@@ -72,7 +72,10 @@ export async function createBug(bugData) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(bugData)
   });
-  if (!res.ok) throw new Error('Eroare la crearea bugului');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Eroare la crearea bugului');
+  }
   return res.json();
 }
 
