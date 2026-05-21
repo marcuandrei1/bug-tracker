@@ -35,6 +35,7 @@ public class BugRepositoryTest {
         author = new User();
         author.setUsername("test_author");
         author.setEmail("test_author@test.com");
+        author.setPhone("+40747362655");
         author.setPassword("pass");
         userRepository.save(author);
     }

@@ -39,6 +39,7 @@ public class CommentRepositoryTest {
         user = new User();
         user.setUsername("test_comment_user");
         user.setEmail("test_comment_user@test.com");
+        user.setPhone("+40747362655");
         user.setPassword("pass");
         userRepository.save(user);
 

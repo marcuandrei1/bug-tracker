@@ -25,6 +25,7 @@ public class UserRepositoryTest {
         User user=new User();
         user.setUsername("save_user");
         user.setEmail("save_user@test.com");
+        user.setPhone("+40747362655");
         user.setPassword("pass");
 
         User savedUser=userRepository.save(user);
@@ -40,6 +41,7 @@ public class UserRepositoryTest {
         User user=new User();
         user.setUsername("find_user");
         user.setEmail("find_user@test.com");
+        user.setPhone("+40747132600");
         user.setPassword("pass");
         userRepository.save(user);
 
@@ -53,6 +55,7 @@ public class UserRepositoryTest {
         User user=new User();
         user.setUsername("find_email");
         user.setEmail("find_email@test.com");
+        user.setPhone("+40740365655");
         user.setPassword("pass");
         userRepository.save(user);
 
@@ -67,12 +70,14 @@ public class UserRepositoryTest {
         User user1 = new User();
         user1.setUsername("user1");
         user1.setEmail("duplicate@test.com");
+        user1.setPhone("+40747365655");
         user1.setPassword("pass");
         userRepository.saveAndFlush(user1);
 
         User user2 = new User();
         user2.setUsername("user2");
         user2.setEmail("duplicate@test.com");
+        user2.setPhone("+40747365644");
         user2.setPassword("pass");
 
         assertThrows(org.springframework.dao.DataIntegrityViolationException.class, () -> {
@@ -85,12 +90,14 @@ public class UserRepositoryTest {
         User user1 = new User();
         user1.setUsername("user");
         user1.setEmail("email1@test.com");
+        user1.setPhone("+40747132600");
         user1.setPassword("pass");
         userRepository.saveAndFlush(user1);
 
         User user2 = new User();
         user2.setUsername("user");
         user2.setEmail("email2@test.com");
+        user1.setPhone("+40758132600");
         user2.setPassword("pass");
 
         assertThrows(org.springframework.dao.DataIntegrityViolationException.class, () -> {
@@ -103,10 +110,14 @@ public class UserRepositoryTest {
         User u1 = new User();
         u1.setUsername("u1");
         u1.setEmail("u1@test.com");
+        u1.setPhone("+40747362550");
+
         u1.setPassword("pass");
         User u2 = new User();
         u2.setUsername("u2");
         u2.setEmail("u2@test.com");
+        u2.setPhone("+40747362600");
+
         u2.setPassword("pass");
         userRepository.save(u1);
         userRepository.save(u2);
@@ -120,6 +131,7 @@ public class UserRepositoryTest {
         User user = new User();
         user.setUsername("to_delete");
         user.setEmail("to_delete@test.com");
+        user.setPhone("+40747362600");
         user.setPassword("pass");
         userRepository.save(user);
 
