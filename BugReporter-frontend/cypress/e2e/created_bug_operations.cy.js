@@ -21,7 +21,7 @@ describe('Bug operations', () => {
   cy.get(':nth-child(5) > input')
     .type('lol, league of legends, lol reconnect, lol disconnecting');
   
-  // cy.get('.btn').click();
+  cy.get('.btn').click();
   });
 
   
