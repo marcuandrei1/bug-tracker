@@ -39,7 +39,7 @@ public class Bug {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "bug_tags",
             joinColumns = @JoinColumn(name = "bug_id"),

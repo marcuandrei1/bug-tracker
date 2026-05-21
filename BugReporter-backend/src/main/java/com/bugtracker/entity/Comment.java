@@ -34,6 +34,9 @@ public class Comment {
     @Transient
     private int score;
 
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<CommentVote> votes = new java.util.ArrayList<>();
+
     @Transient
     private String userVoteType;
 

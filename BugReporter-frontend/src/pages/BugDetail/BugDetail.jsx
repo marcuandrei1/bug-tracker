@@ -55,7 +55,7 @@ function BugDetail({ user }) {
   const handleDeleteBug = async () => {
     if (!window.confirm('Esti sigur ca vrei sa stergi acest bug?')) return;
     try {
-      await deleteBug(id);
+      await deleteBug(id, user);
       navigate('/bugs');
     } catch (e) {
       setError(e.message);
@@ -65,7 +65,7 @@ function BugDetail({ user }) {
   const handleDeleteComment = async (commentId) => {
     if (!window.confirm('Stergi comentariul?')) return;
     try {
-      await deleteComment(commentId);
+      await deleteComment(commentId,user);
       loadData();
     } catch (e) {
       setError(e.message);
@@ -141,7 +141,7 @@ function BugDetail({ user }) {
   if (error && !bug) return <div className="container"><p style={{ color: 'red' }}>{error}</p></div>;
   if (!bug) return <div className="container"><p style={{ color: 'red' }}>Bug negasit.</p></div>;
 
-  const isAuthor = user && bug.author && user.id === bug.author.id;
+  const isAuthor = user && bug.author && user.id === bug.author.id || user?.role==="MODERATOR";
   const formatUserScore = (score) => `${Number(score ?? 0).toFixed(1)} puncte`;
 
   return (
@@ -157,7 +157,11 @@ function BugDetail({ user }) {
         </div>
 
         <div className="meta">
-          De {bug.author?.username || 'Anonim'} ({formatUserScore(bug.author?.score)}) &middot; {new Date(bug.createdAt).toLocaleString()}
+          De {bug.author ? (
+            <Link to={`/profile/${bug.author.id}`} className="author-link">
+              {bug.author.username}
+            </Link>
+        ) : 'Anonim'} ({formatUserScore(bug.author?.score)}) &middot; {new Date(bug.createdAt).toLocaleString()}
         </div>
         {bug.imageUrl && (
           <img src={`http://localhost:8080${bug.imageUrl}`} alt="bug image" style={{ maxWidth: '100%', margin: '0.5rem 0', borderRadius: '6px' }} />
@@ -183,13 +187,13 @@ function BugDetail({ user }) {
           <span>{bug.score || 0}</span>
         </div>
         {isAuthor && (
-          <div className="mt-1" style={{ display: 'flex', gap: '0.5rem' }}>
-            <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/bugs/${bug.id}/edit`)}>Editeaza</button>
-            <button className="btn btn-danger btn-sm" onClick={handleDeleteBug}>Sterge</button>
-            {bug.status !== 'SOLVED' && (
-              <button className="btn btn-primary btn-sm" onClick={handleMarkSolved}>Marcheaza ca rezolvat</button>
-            )}
-          </div>
+            <div className="mt-1" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/bugs/${bug.id}/edit`)}>Editeaza</button>
+              <button className="btn btn-danger btn-sm" onClick={handleDeleteBug}>Sterge</button>
+              {bug.status !== 'SOLVED' && (
+                  <button className="btn btn-primary btn-sm" onClick={handleMarkSolved}>Marcheaza ca rezolvat</button>
+              )}
+            </div>
         )}
       </div>
 
@@ -200,21 +204,31 @@ function BugDetail({ user }) {
           <p>Niciun comentariu inca.</p>
         ) : (
           comments.map(c => {
-            const isCommentAuthor = user && c.author && user.id === c.author.id;
+            const isCommentAuthor = user && c.author && user.id === c.author.id || user?.role==="MODERATOR";
 
             return (
               <div key={c.id} className="comment">
                 <div className="flex-between">
                   <div className="meta">
-                    {c.author?.username || 'Anonim'} ({formatUserScore(c.author?.score)}) &middot; {new Date(c.createdAt).toLocaleString()}
+                    {c.author ? (
+                        c.author.banned ? (
+                            <span style={{ color: '#aaaaaa', fontWeight: 'bold', fontStyle: 'italic' }}>
+                                [Utilizator Suspendat]
+                           </span>
+                        ) : (
+                            <Link to={`/profile/${c.author.id}`} className="author-link">
+                              {c.author.username}
+                            </Link>
+                        )
+                    ) : 'Anonim'} ({formatUserScore(c.author?.score)}) &middot; {new Date(c.createdAt).toLocaleString()}
                   </div>
                   {isCommentAuthor && (
-                    <div style={{ display: 'flex', gap: '0.3rem' }}>
-                      {editingCommentId !== c.id && (
-                        <button className="btn btn-secondary btn-sm" onClick={() => handleEditComment(c)}>Editeaza</button>
-                      )}
-                      <button className="btn btn-danger btn-sm" onClick={() => handleDeleteComment(c.id)}>Sterge</button>
-                    </div>
+                      <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
+                        {editingCommentId !== c.id && (
+                            <button className="btn btn-secondary btn-sm" onClick={() => handleEditComment(c)}>Editeaza</button>
+                        )}
+                        <button className="btn btn-danger btn-sm" onClick={() => handleDeleteComment(c.id)}>Sterge</button>
+                      </div>
                   )}
                 </div>
 
@@ -243,7 +257,7 @@ function BugDetail({ user }) {
                     disabled={isCommentAuthor}
                     className={c.userVoteType === 'LIKE' ? 'vote-like-active' : ''}
                     onClick={() => handleVoteComment(c.id, 'LIKE')}
-                    title={isCommentAuthor ? "Nu iti poti vota propriul comentariu" : ""}
+                    title={user?.role === 'MODERATOR' ? "Moderatorii nu pot vota" : "Nu iti poti vota propriul comentariu"}
                   >
                     👍🏼
                   </button>

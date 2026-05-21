@@ -5,10 +5,13 @@ import com.bugtracker.repository.BugRepository;
 import com.bugtracker.repository.BugVoteRepository;
 import com.bugtracker.repository.TagRepository;
 import com.bugtracker.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BugService {
@@ -145,33 +148,44 @@ public class BugService {
         return bug;
     }
 
+    @Transactional
+    public Bug updateBug(Long id, Bug bugData, Long currentUserId, Role currentUserRole) {
+        Bug existingBug = bugRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Bug-ul nu a fost găsit"));
 
-    // la updateBug, pentru lista de Tag-uri se poate modifica doar lista de taguri, nu sa modificam tagurile din interiorul unui bug
-    public Bug updateBug(Long id, Bug updatedBug) {
+        existingBug.setTitle(bugData.getTitle());
+        existingBug.setText(bugData.getText());
+
+        List<Tag> managedTags = new ArrayList<>();
+        if (bugData.getTags() != null) {
+            for (Tag tag : bugData.getTags()) {
+                Optional<Tag> existingTag = tagRepository.findByName(tag.getName());
+
+                if (existingTag.isPresent()) {
+                    managedTags.add(existingTag.get());
+                } else {
+                    Tag newTag = new Tag();
+                    newTag.setName(tag.getName());
+                    managedTags.add(tagRepository.save(newTag));
+                }
+            }
+        }
+
+        existingBug.getTags().clear();
+        existingBug.getTags().addAll(managedTags);
+
+        return bugRepository.save(existingBug);
+    }
+
+    public void deleteBug(Long id, Long currentUserId, Role currentUserRole) {
         Bug bug = bugRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Bug not found"));
 
-        if (updatedBug.getTitle() != null) {
-            bug.setTitle(updatedBug.getTitle());
-        }
-        if (updatedBug.getText() != null) {
-            bug.setText(updatedBug.getText());
-        }
-        if (updatedBug.getImageUrl() != null) {
-            bug.setImageUrl(updatedBug.getImageUrl());
-        }
-        if (updatedBug.getStatus() != null) {
-            bug.setStatus(updatedBug.getStatus());
-        }
-        if (updatedBug.getTags() != null) {
-            bug.setTags(updatedBug.getTags());
+        if (!bug.getAuthor().getId().equals(currentUserId) && currentUserRole != Role.MODERATOR) {
+            throw new RuntimeException("Nu ai permisiunea sa stergi acest bug");
         }
 
-        return bugRepository.save(bug);
-    }
-
-    public void deleteBug(Long id) {
-        bugRepository.deleteById(id);
+        bugRepository.delete(bug);
     }
 
     public Bug markAsSolved(Long id) {

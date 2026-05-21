@@ -8,6 +8,7 @@ import EditBug from './pages/EditBug/EditBug.jsx';
 import Profile from './pages/Profile/Profile.jsx';
 import Login from './pages/Login/Login.jsx';
 import Register from './pages/Register/Register.jsx';
+import ModeratorDashboard from './pages/ModeratorDashboard/ModeratorDashboard.jsx'
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -33,18 +34,25 @@ function App() {
   }
 
   return (
-    <>
-      <Navbar user={user} onLogout={handleLogout} />
-      <Routes>
-        <Route path="/" element={<Navigate to="/bugs" replace />} />
-        <Route path="/bugs" element={<Bugs user={user} />} />
-        <Route path="/bugs/:id" element={<BugDetail user={user} />} />
-        <Route path="/bugs/:id/edit" element={<EditBug user={user} />} />
-        <Route path="/create-bug" element={<CreateBug user={user} />} />
-        <Route path="/profile" element={<Profile user={user} onLogout={handleLogout} />} />
-        <Route path="*" element={<Navigate to="/bugs" replace />} />
-      </Routes>
-    </>
+      <>
+        <Navbar user={user} onLogout={handleLogout} />
+        <Routes>
+          <Route path="/" element={<Navigate to="/bugs" replace />} />
+          <Route path="/bugs" element={<Bugs user={user} />} />
+          <Route path="/bugs/:id" element={<BugDetail user={user} />} />
+          <Route path="/bugs/:id/edit" element={<EditBug user={user} />} />
+          <Route path="/create-bug" element={<CreateBug user={user} />} />
+
+          <Route path="/profile" element={<Profile currentUser={user} onLogout={handleLogout} />} />
+          <Route path="/profile/:id" element={<Profile currentUser={user} onLogout={handleLogout} />} />
+
+          {user?.role === 'MODERATOR' && (
+              <Route path="/moderator-dashboard" element={<ModeratorDashboard currentUser={user} />} />
+          )}
+
+          <Route path="*" element={<Navigate to="/bugs" replace />} />
+        </Routes>
+      </>
   );
 }
 

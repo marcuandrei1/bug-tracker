@@ -35,6 +35,11 @@ public class User {
     @Transient
     private double score;
 
+    @Enumerated(EnumType.STRING)
+    private Role role=Role.USER;
+
+    private boolean isBanned=false;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

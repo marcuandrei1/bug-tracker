@@ -62,7 +62,7 @@ function CreateBug({ user }) {
         <div className="form-group">
           <label>Descriere</label>
           <textarea
-            placeholder="Descrie bugul in detaliu..."
+            placeholder="Ofera cat mai multe detalii despre problema ta..."
             value={text}
             onChange={e => setText(e.target.value)}
           />

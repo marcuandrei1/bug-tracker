@@ -15,6 +15,21 @@ export async function loginUser(username, password) {
   return res.json();
 }
 
+export async function searchUsers(usernameQuery, currentUser) {
+  const res = await fetch(`${API}/users/search?username=${usernameQuery}`, {
+    method: 'GET',
+    headers: {
+      'X-Current-User-Id': currentUser.id,
+      'X-Current-User-Role': currentUser.role
+    }
+  });
+
+  if (!res.ok) {
+    throw new Error('Eroare la căutarea utilizatorilor.');
+  }
+  return res.json();
+}
+
 export async function registerUser(username, email, password) {
   const res = await fetch(`${API}/users/register`, {
     method: 'POST',
@@ -61,20 +76,58 @@ export async function createBug(bugData) {
   return res.json();
 }
 
-export async function updateBug(id, bugData) {
+export async function banUser(targetUserId, currentUser) {
+  const res = await fetch(`${API}/users/${targetUserId}/ban`, {
+    method: 'PUT',
+    headers: {
+      'X-Current-User-Id': currentUser.id,
+      'X-Current-User-Role': currentUser.role
+    }
+  });
+
+  if (!res.ok) {
+    throw new Error('Nu s-a putut bana utilizatorul. Verifică dacă ai drepturi de moderator.');
+  }
+  return res.json();
+}
+
+export async function unbanUser(targetUserId, currentUser) {
+  const res = await fetch(`${API}/users/${targetUserId}/unban`, {
+    method: 'PUT',
+    headers: {
+      'X-Current-User-Id': currentUser.id,
+      'X-Current-User-Role': currentUser.role
+    }
+  });
+  if (!res.ok) throw new Error('Nu s-a putut debloca utilizatorul.');
+  return res.json();
+}
+
+export async function updateBug(id, bugData, currentUser) {
   const res = await fetch(`${API}/bugs/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Current-User-Id': currentUser.id,
+      'X-Current-User-Role': currentUser.role
+    },
     body: JSON.stringify(bugData)
   });
   if (!res.ok) throw new Error('Eroare la actualizarea bugului');
   return res.json();
 }
 
-export async function deleteBug(id) {
-  const res = await fetch(`${API}/bugs/${id}`, { method: 'DELETE' });
+export async function deleteBug(id, currentUser) {
+  const res = await fetch(`${API}/bugs/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'X-Current-User-Id': currentUser.id,
+      'X-Current-User-Role': currentUser.role
+    }
+  });
   if (!res.ok) throw new Error('Eroare la stergerea bugului');
 }
+
 
 export async function markBugAsSolved(id) {
   const res = await fetch(`${API}/bugs/${id}/solve`, { method: 'PUT' });
@@ -126,8 +179,14 @@ export async function updateComment(id, commentData) {
   return res.json();
 }
 
-export async function deleteComment(id) {
-  const res = await fetch(`${API}/comments/${id}`, { method: 'DELETE' });
+export async function deleteComment(id, currentUser) {
+  const res = await fetch(`${API}/comments/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'X-Current-User-Id': currentUser.id,
+      'X-Current-User-Role': currentUser.role
+    }
+  });
   if (!res.ok) throw new Error('Eroare la stergerea comentariului');
 }
 

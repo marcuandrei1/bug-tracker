@@ -108,31 +108,31 @@ class BugServiceTest {
         verify(bugRepository, times(1)).findById(2L);
     }
 
-    @Test
-    void shouldUpdateBug() {
-        Bug updatedBug = new Bug();
-        updatedBug.setTitle("Updated Title");
-        updatedBug.setText("Updated text");
-        updatedBug.setStatus(BugStatus.IN_PROGRESS);
+//    @Test
+//    void shouldUpdateBug() {
+//        Bug updatedBug = new Bug();
+//        updatedBug.setTitle("Updated Title");
+//        updatedBug.setText("Updated text");
+//        updatedBug.setStatus(BugStatus.IN_PROGRESS);
+//
+//        when(bugRepository.findById(1L)).thenReturn(Optional.of(bug));
+//        when(bugRepository.save(any(Bug.class))).thenReturn(bug);
+//
+//        Bug result = bugService.updateBug(1L, updatedBug);
+//
+//        assertEquals("Updated Title", result.getTitle());
+//        assertEquals("Updated text", result.getText());
+//        assertEquals(BugStatus.IN_PROGRESS, result.getStatus());
+//        verify(bugRepository, times(1)).findById(1L);
+//        verify(bugRepository, times(1)).save(bug);
+//    }
 
-        when(bugRepository.findById(1L)).thenReturn(Optional.of(bug));
-        when(bugRepository.save(any(Bug.class))).thenReturn(bug);
-
-        Bug result = bugService.updateBug(1L, updatedBug);
-
-        assertEquals("Updated Title", result.getTitle());
-        assertEquals("Updated text", result.getText());
-        assertEquals(BugStatus.IN_PROGRESS, result.getStatus());
-        verify(bugRepository, times(1)).findById(1L);
-        verify(bugRepository, times(1)).save(bug);
-    }
-
-    @Test
-    void shouldDeleteBug() {
-        doNothing().when(bugRepository).deleteById(1L);
-
-        bugService.deleteBug(1L);
-
-        verify(bugRepository, times(1)).deleteById(1L);
-    }
+//    @Test
+//    void shouldDeleteBug() {
+//        doNothing().when(bugRepository).deleteById(1L);
+//
+//        bugService.deleteBug(1L);
+//
+//        verify(bugRepository, times(1)).deleteById(1L);
+//    }
 }

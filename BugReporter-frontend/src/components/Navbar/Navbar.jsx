@@ -9,9 +9,15 @@ function Navbar({ user, onLogout }) {
       <Link to="/bugs" className="brand">
         <img src={logo} alt="TrackMyBug" className="navbar-logo" />
       </Link>
+        {user?.role === 'MODERATOR' && (
+            <Link to="/moderator-dashboard" className="nav-link" style={{ color: '#d9534f', fontWeight: 'bold', marginRight: '15px' }}>
+                Moderator
+            </Link>
+        )}
       <div className="nav-links">
-        <Link to="/bugs">Bugs</Link>
-        <Link to="/create-bug" className="write-btn" title="Raporteaza bug">
+        {/*<Link to="/bugs">Bugs</Link>*/}
+
+            <Link to="/create-bug" className="write-btn" title="Raporteaza bug">
           <img src={writeIcon} alt="Write" className="write-icon" />
           <span>Write</span>
         </Link>

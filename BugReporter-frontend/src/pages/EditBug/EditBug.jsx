@@ -18,7 +18,7 @@ function EditBug({ user }) {
     const load = async () => {
       try {
         const bug = await getBugById(id);
-        if (bug.author?.id !== user.id) {
+        if (bug.author?.id !== user.id && user.role !== "MODERATOR") {
           navigate('/bugs');
           return;
         }
@@ -58,7 +58,9 @@ function EditBug({ user }) {
         imageUrl,
         author: { id: user.id },
         tags: tagList
-      });
+      },
+        user
+      );
       navigate(`/bugs/${id}`);
     } catch (e) {
       setError(e.message);

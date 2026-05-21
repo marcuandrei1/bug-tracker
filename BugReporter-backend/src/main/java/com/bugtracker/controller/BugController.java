@@ -2,8 +2,10 @@ package com.bugtracker.controller;
 
 import com.bugtracker.entity.Bug;
 import com.bugtracker.entity.Comment;
+import com.bugtracker.entity.Role;
 import com.bugtracker.service.BugService;
 import com.bugtracker.service.CommentService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -57,13 +59,30 @@ public class BugController {
     }
 
     @PutMapping("/{id}")
-    public Bug updateBug(@PathVariable Long id, @RequestBody Bug bug) {
-        return bugService.updateBug(id, bug);
+    public ResponseEntity<Bug> updateBug(
+            @PathVariable Long id,
+            @RequestBody Bug bug,
+            @RequestHeader("X-Current-User-Id") Long currentUserId,
+            @RequestHeader("X-Current-User-Role") String currentUserRole) {
+
+        Role roleEnum = Role.valueOf(currentUserRole);
+
+        Bug updatedBug = bugService.updateBug(id, bug, currentUserId, roleEnum);
+        return ResponseEntity.ok(updatedBug);
     }
 
+
     @DeleteMapping("/{id}")
-    public void deleteBug(@PathVariable Long id) {
-        bugService.deleteBug(id);
+    public ResponseEntity<Void> deleteBug(
+            @PathVariable Long id,
+            @RequestHeader("X-Current-User-Id") Long currentUserId,
+            @RequestHeader("X-Current-User-Role") String currentUserRole) {
+
+        Role roleEnum = Role.valueOf(currentUserRole);
+
+        bugService.deleteBug(id, currentUserId, roleEnum);
+
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{bugId}/comments")

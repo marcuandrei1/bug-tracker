@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -26,6 +27,8 @@ public class UserService {
         return userRepository.findById(id).orElseThrow();
     }
 
+
+
     public User register(User user) {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new RuntimeException("Username-ul exista deja");
@@ -40,10 +43,20 @@ public class UserService {
     public User login(String username, String password) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Username-ul nu exista"));
+
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Parola gresita");
+            throw new RuntimeException("Nume de utilizator sau parola incorecta");
         }
+
+        if(user.isBanned()){
+            throw new RuntimeException("Contul tau a fost suspendat");
+        }
+
         return user;
+    }
+
+    public Optional<List<User>> searchUsersByUsername(String username){
+        return userRepository.findByUsernameContainingIgnoreCase(username);
     }
 
     public User updateUser(Long id, User updatedUser) {
@@ -53,6 +66,25 @@ public class UserService {
         if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
         }
+        return userRepository.save(user);
+    }
+
+    public User banUser(Long id){
+        User user=userRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("User not found"));
+
+        user.setBanned(true);
+
+        // TODO: mecanism de notificare
+
+        return userRepository.save(user);
+    }
+
+    public User unbanUser(Long id){
+        User user=userRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("User not found"));
+
+        user.setBanned(true);
         return userRepository.save(user);
     }
 

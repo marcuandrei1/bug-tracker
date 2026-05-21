@@ -58,7 +58,7 @@ function Bugs({ user }) {
 
   return (
     <div className="container">
-      <div className="filters">
+      <div className="filters" style={{ alignItems: 'center' }}>
         <input
           type="text"
           placeholder="Cauta dupa titlu..."
@@ -85,9 +85,9 @@ function Bugs({ user }) {
         <button className="btn btn-sm" onClick={handleReset} style={{ background: '#ccc' }}>
           Reset
         </button>
-        <button className="btn btn-danger btn-sm" onClick={() => navigate('/create-bug')}>
-          + Raporteaza Bug
-        </button>
+        {/*<button className="btn btn-danger btn-sm" onClick={() => navigate('/create-bug')}>*/}
+        {/*  Raporteaza Bug*/}
+        {/*</button>*/}
       </div>
 
       <div>
