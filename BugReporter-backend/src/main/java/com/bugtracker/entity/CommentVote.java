@@ -1,5 +1,6 @@
 package com.bugtracker.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,6 +28,7 @@ public class CommentVote {
 
     @ManyToOne
     @JoinColumn(name = "comment_id", nullable = false)
+    @JsonBackReference
     private Comment comment;
 
     @Enumerated(EnumType.STRING)

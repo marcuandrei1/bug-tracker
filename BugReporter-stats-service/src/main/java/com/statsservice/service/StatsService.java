@@ -14,12 +14,13 @@ public class StatsService {
     }
 
     public StatsResponse getStats() {
-        long totalBugs     = count("SELECT COUNT(*) FROM bug");
-        long received      = count("SELECT COUNT(*) FROM bug WHERE status = 'RECEIVED'");
-        long inProgress    = count("SELECT COUNT(*) FROM bug WHERE status = 'IN_PROGRESS'");
-        long solved        = count("SELECT COUNT(*) FROM bug WHERE status = 'SOLVED'");
-        long totalComments = count("SELECT COUNT(*) FROM comment");
-        long totalUsers    = count("SELECT COUNT(*) FROM users");
+        long totalBugs     = count("SELECT COUNT(*) FROM bugtracker.bug");
+        long received      = count("SELECT COUNT(*) FROM bugtracker.bug WHERE status = 'RECEIVED'");
+        long inProgress    = count("SELECT COUNT(*) FROM bugtracker.bug WHERE status = 'IN_PROGRESS'");
+        long solved        = count("SELECT COUNT(*) FROM bugtracker.bug WHERE status = 'SOLVED'");
+        long totalComments = count("SELECT COUNT(*) FROM bugtracker.comment");
+
+        long totalUsers    = count("SELECT COUNT(*) FROM bugtracker.users");
 
         return new StatsResponse(totalBugs, received, inProgress, solved, totalComments, totalUsers);
     }

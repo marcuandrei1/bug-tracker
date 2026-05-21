@@ -7,16 +7,20 @@ describe('Base Operations', () => {
     cy.url().should('include', '/register');
     cy.get('h2').should('contain', 'Inregistrare')
     
-    cy.get(':nth-child(2) > input').type('UserTest')
-    cy.get(':nth-child(2) > input')
+    cy.get(':nth-child(1) > input').type('UserTest')
+    cy.get(':nth-child(1) > input')
       .should('have.value', 'UserTest')
     
-    cy.get(':nth-child(3) > input').type('usertest@test.com')
-    cy.get(':nth-child(3) > input')
+    cy.get(':nth-child(2) > input').type('usertest@test.com')
+    cy.get(':nth-child(2) > input')
       .should('have.value', 'usertest@test.com')
+
+    cy.get(':nth-child(3) > input').type('+40722333444');
+    cy.get(':nth-child(3) > input')
+      .should('have.value', '+40722333444');
     
     cy.get(':nth-child(4) > input').click()
-    cy.get(':nth-child(4) > input').type('test123')
+    cy.get(':nth-child(4) > input').type('parola')
     cy.get('#root button.btn').click();
     
     // cy.url()
@@ -44,7 +48,7 @@ describe('Base Operations', () => {
       })
     
     cy.get('#root div:nth-child(2) input').type('UserTest');
-    cy.get('#root div:nth-child(3) input').type('test123');
+    cy.get('#root div:nth-child(3) input').type('parola');
     cy.get('.btn').click();
   });
 

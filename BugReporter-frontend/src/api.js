@@ -30,11 +30,11 @@ export async function searchUsers(usernameQuery, currentUser) {
   return res.json();
 }
 
-export async function registerUser(username, email, password) {
+export async function registerUser(username, email, password, phone) {
   const res = await fetch(`${API}/users/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, email, password })
+    body: JSON.stringify({ username, email, password, phone})
   });
   if (!res.ok) {
     const err = await res.json();
@@ -216,10 +216,19 @@ export async function getAllUsers() {
 
 // ---- STATS ----
 
+// export async function getStats() {
+//   const res = await fetch(`${API}/stats`);
+//   if (!res.ok) throw new Error('Eroare la incarcarea statisticilor');
+//   return res.json();
+// }
+
 export async function getStats() {
   const res = await fetch(`${API}/stats`);
-  if (!res.ok) throw new Error('Eroare la incarcarea statisticilor');
-  return res.json();
+
+  const text = await res.text();
+  console.log(text);
+
+  return JSON.parse(text);
 }
 
 // ---- FILES ----

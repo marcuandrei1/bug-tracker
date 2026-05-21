@@ -1,5 +1,6 @@
 package com.bugtracker.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -35,6 +36,7 @@ public class Comment {
     private int score;
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private java.util.List<CommentVote> votes = new java.util.ArrayList<>();
 
     @Transient
