@@ -35,10 +35,11 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Create database initialization script
+      - name: Create and apply database schema
         run: |
           mkdir -p /tmp
           echo "CREATE SCHEMA IF NOT EXISTS bugtracker;" > /tmp/init-db.sql
+          PGPASSWORD=password psql -h localhost -U postgres -d bugtracker_test -f /tmp/init-db.sql
         env:
           HOME: /tmp
 
