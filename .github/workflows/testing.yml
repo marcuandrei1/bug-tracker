@@ -48,6 +48,7 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/bugtracker_test
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: password
+          SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
         run: mvn test
 
   cypress-tests:
