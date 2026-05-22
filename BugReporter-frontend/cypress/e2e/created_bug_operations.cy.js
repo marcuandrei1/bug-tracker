@@ -24,6 +24,10 @@ describe('Bug operations', () => {
       .type('lol, league of legends, lol reconnect, lol disconnecting');
     
     cy.get('.btn').click();
+    
+    // Verify bug creation was successful
+    cy.url().should('eq', 'http://localhost:5173/bugs');
+    cy.get('.card').should('exist');
   });
 
   
@@ -50,6 +54,9 @@ describe('Bug operations', () => {
       .type('Si eu am patit asta si cred ca e problema de la Digi. Nu avem ce sa facem pana nu rezolva ei asta.');
     
     cy.get('.btn').click();
+    
+    // Verify comment was posted
+    cy.get('.comment').should('contain', 'Si eu am patit asta si cred ca e problema de la Digi. Nu avem ce sa facem pana nu rezolva ei asta.');
   });
 
   it('comment reply', function() {
@@ -69,5 +76,11 @@ describe('Bug operations', () => {
       } 
     });
     
+    // Add reply to comment
+    cy.get('.comment-reply-input').type('Great point! I agree with this.');
+    cy.get('.comment-reply-btn').click();
+    
+    // Verify reply was posted
+    cy.get('.comment-reply').should('contain', 'Great point! I agree with this.');
   });
 });
